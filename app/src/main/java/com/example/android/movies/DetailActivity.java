@@ -84,7 +84,7 @@ public class DetailActivity extends ActionBarActivity {
 
                 // fetch thumbnail using thumbnail URL
                 ImageView imageView = (ImageView) rootView.findViewById(R.id.thumb_imageview);
-                Picasso.with(getActivity()).load(movie.getPosterPath()).into(imageView);
+                Picasso.with(getActivity()).load(movie.getThumbPath()).into(imageView);
 
                 // extract synopsis
                 ((TextView) rootView.findViewById(R.id.synopsis_text))

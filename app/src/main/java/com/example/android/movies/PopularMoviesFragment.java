@@ -124,7 +124,7 @@ public class PopularMoviesFragment extends Fragment {
             final String MDB_SYNP = "overview";
             final String MDB_REL_DATE = "release_date";
             final String MDB_POSTER = "poster_path";
-            final String MDB_RATING = "popularity";
+            final String MDB_RATING = "vote_average";
 
             JSONObject movieJson = new JSONObject(movieJsonStr);
             JSONArray movieArray = movieJson.getJSONArray(MDB_LIST);
@@ -149,7 +149,7 @@ public class PopularMoviesFragment extends Fragment {
                 temp.setTitle(movie.getString(MDB_TITLE)); // original title
                 temp.setPosterPath("http://image.tmdb.org/t/p/w185"
                                   + movie.getString(MDB_POSTER)); // URL to poster
-                temp.setThumbPath("http://image.tmdb.org/t/p/w185"
+                temp.setThumbPath("http://image.tmdb.org/t/p/w500"
                                   + movie.getString(MDB_THUMB)); // URL to thumbnail
                 temp.setReleaseDate(movie.getString(MDB_REL_DATE)); // release date
                 temp.setSynopsis(movie.getString(MDB_SYNP)); // synopsis
