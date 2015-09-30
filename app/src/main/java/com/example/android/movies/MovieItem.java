@@ -120,4 +120,20 @@ public class MovieItem implements Parcelable {
         rating = in.readDouble();
         synopsis = in.readString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MovieItem movieItem = (MovieItem) o;
+
+        return title.equals(movieItem.title);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return title.hashCode();
+    }
 }

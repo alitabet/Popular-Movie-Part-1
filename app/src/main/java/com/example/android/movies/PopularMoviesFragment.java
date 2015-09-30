@@ -6,12 +6,14 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
@@ -30,6 +32,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -38,11 +41,16 @@ import java.util.ArrayList;
  * MovieDB API.
  *
  * @author Ali K Thabet
- *
  */
 public class PopularMoviesFragment extends Fragment {
 
+    private final String LOG_TAG = PopularMoviesFragment.class.getSimpleName();
+    private final int MAX_PAGES = 1000; // maximum page value allowed by API
     private ImageAdapter mMoviesAdaptor; // adaptor to interact with GridView
+
+    Parcelable mListState; // save state of list
+    GridView gridView;
+    private int mCurrentPage;
 
     public PopularMoviesFragment() {
     }
@@ -50,27 +58,50 @@ public class PopularMoviesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mCurrentPage = 0;
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
     }
 
     @Override
+    public void onPause() {
+        Log.v(LOG_TAG,"Pausing with " + mCurrentPage + " pages.");
+        mListState = gridView.onSaveInstanceState();
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        Log.v(LOG_TAG,"Resuming with " + mCurrentPage + " pages.");
+
+        for (int i = 0; i < mCurrentPage; i++)
+            updateMovies(i);
+
+        if (mListState != null) {
+            gridView.onRestoreInstanceState(mListState);
+        }
+
+        mListState = null;
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         // the ImageAdaptor will read relevant data from a source
         // and it will attach images to the GridView using the
         // read data
         mMoviesAdaptor = new ImageAdapter(getActivity(), // the current context (this activity)
-                                R.layout.grid_item_movies, // the id of layout containing ImageView
-                                new ArrayList<MovieItem>()); // list of movies to add
+                R.layout.grid_item_movies, // the id of layout containing ImageView
+                new ArrayList<MovieItem>()); // list of movies to add
 
         // get a reference to the GridView and attach the ImageAdaptor to it
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movies);
+        gridView = (GridView) rootView.findViewById(R.id.gridview_movies);
         gridView.setAdapter(mMoviesAdaptor);
 
-        // set an listener for clicking on a movie poster
+        // set a listener for clicking on a movie poster
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             // when poster is clicked, call DetailActivity and pass
@@ -84,20 +115,50 @@ public class PopularMoviesFragment extends Fragment {
             }
         });
 
+        // set scroll listener
+        gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
+
+            private int visibleThreshold = 4;
+            private int currentPage = 1;
+            private int previousTotal = 0;
+            private boolean loading = true;
+
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                if (currentPage > MAX_PAGES) return;
+
+                if (loading) {
+                    if (totalItemCount > previousTotal) {
+                        loading = false;
+                        previousTotal = totalItemCount;
+                        //currentPage++;
+                    }
+                } else if (totalItemCount != 0 && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
+                    updateMovies(++currentPage);
+                    mCurrentPage = currentPage;
+                    loading = true;
+                }
+            }
+        });
         return rootView;
     }
 
     // fetch movie data from MovieDB API using an AsyncTask
-    private void updateMovies() {
+    private void updateMovies(Integer pageNumber) {
         FetchMoviesTask moviesTask = new FetchMoviesTask();
-        moviesTask.execute();
+        moviesTask.execute(pageNumber.toString());
     }
 
     // when fragment starts, load movie data
     @Override
     public void onStart() {
         super.onStart();
-        updateMovies();
+        updateMovies(1);
     }
 
     /**
@@ -105,7 +166,7 @@ public class PopularMoviesFragment extends Fragment {
      * the MovieDB API. The task wil return an ArrayList of
      * <em>MovieItem</em> objects
      */
-    public class FetchMoviesTask extends AsyncTask<Void, Void, ArrayList<MovieItem>> {
+    public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<MovieItem>> {
 
         // LOG_TAG used for debugging
         private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
@@ -113,10 +174,11 @@ public class PopularMoviesFragment extends Fragment {
         // this function parses a JSON string containing movie
         // information into an ArrayList of <em>MovieItem</em>
         // objects
-        private ArrayList<MovieItem> getMoviesFromJsonStr (String movieJsonStr)
-                    throws JSONException {
+        private ArrayList<MovieItem> getMoviesFromJsonStr(String movieJsonStr)
+                throws JSONException {
 
             // These are the names of the JSON objects that need to be extracted.
+            final String MDB_TOTAL_PAGES = "total_pages";
             final String MDB_LIST = "results";
             final String MDB_ID = "id";
             final String MDB_TITLE = "original_title";
@@ -127,6 +189,7 @@ public class PopularMoviesFragment extends Fragment {
             final String MDB_RATING = "vote_average";
 
             JSONObject movieJson = new JSONObject(movieJsonStr);
+
             JSONArray movieArray = movieJson.getJSONArray(MDB_LIST);
 
             // The JSON object returns a list of the most popular movies
@@ -147,10 +210,10 @@ public class PopularMoviesFragment extends Fragment {
                 JSONObject movie = movieArray.getJSONObject(i); // get the current movie data
                 temp.setId(movie.getInt(MDB_ID)); // movie id
                 temp.setTitle(movie.getString(MDB_TITLE)); // original title
-                temp.setPosterPath("http://image.tmdb.org/t/p/w185"
-                                  + movie.getString(MDB_POSTER)); // URL to poster
-                temp.setThumbPath("http://image.tmdb.org/t/p/w500"
-                                  + movie.getString(MDB_THUMB)); // URL to thumbnail
+                temp.setPosterPath(getString(R.string.poster_url)
+                        + movie.getString(MDB_POSTER)); // URL to poster
+                temp.setThumbPath(getString(R.string.thumb_url)
+                        + movie.getString(MDB_THUMB)); // URL to thumbnail
                 temp.setReleaseDate(movie.getString(MDB_REL_DATE)); // release date
                 temp.setSynopsis(movie.getString(MDB_SYNP)); // synopsis
                 temp.setRating(movie.getDouble(MDB_RATING)); // get user rating
@@ -162,7 +225,19 @@ public class PopularMoviesFragment extends Fragment {
         }
 
         @Override
-        protected ArrayList<MovieItem> doInBackground(Void... params) {
+        protected ArrayList<MovieItem> doInBackground(String... params) {
+
+            String pageRequested;
+
+            // Check the input
+            if (params.length < 1) {
+                pageRequested = "1";
+            } else {
+                pageRequested = params[0];
+            }
+
+            // if requested page is out of bound then return
+            if (Integer.parseInt(pageRequested) > MAX_PAGES) return new ArrayList<>();
 
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
@@ -176,12 +251,13 @@ public class PopularMoviesFragment extends Fragment {
             // by popularity or user rating
             SharedPreferences sharedPrefs =
                     PreferenceManager.getDefaultSharedPreferences(getActivity());
-            String unitType = sharedPrefs.getString(
+            String sortType = sharedPrefs.getString(
                     getString(R.string.pref_sort_key),
                     getString(R.string.pref_sort_popular));
 
             String sortBy = getString(R.string.pref_sort_popular_api);
-            if (unitType.equals(getString(R.string.pref_sort_rated))) sortBy = getString(R.string.pref_sort_rated_api);
+            if (sortType.equals(getString(R.string.pref_sort_rated)))
+                sortBy = getString(R.string.pref_sort_rated_api);
 
             String apiKey = getActivity().getString(R.string.api_key);
 
@@ -190,11 +266,13 @@ public class PopularMoviesFragment extends Fragment {
                 // using the API Key and sorting parameters
                 final String FORECAST_BASE_URL = getString(R.string.moviedb_url);
                 final String SORT_PARAM = getString(R.string.moviedb_sort_param);
+                final String PAGE_PARAM = getString(R.string.moviedb_page_param);
                 final String KEY_PARAM = getString(R.string.moviedb_api_key_param);
 
                 Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
                         .appendQueryParameter(SORT_PARAM, sortBy)
                         .appendQueryParameter(KEY_PARAM, apiKey)
+                        .appendQueryParameter(PAGE_PARAM, pageRequested)
                         .build();
 
                 URL url = new URL(builtUri.toString());
@@ -245,8 +323,8 @@ public class PopularMoviesFragment extends Fragment {
             try {
                 return getMoviesFromJsonStr(moviesJsonStr);
             } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
+                Log.e(LOG_TAG, e.getMessage(), e);
+                e.printStackTrace();
             }
 
             // This will only happen if there was an error getting or parsing the movie data.
@@ -259,10 +337,7 @@ public class PopularMoviesFragment extends Fragment {
             // the MovieDB API, then store it in the
             // custom adapter
             if (results != null) {
-                mMoviesAdaptor.clear();
-                for (MovieItem mi : results) {
-                    mMoviesAdaptor.add(mi);
-                }
+                mMoviesAdaptor.addAll(results);
             }
         }
     }
@@ -276,19 +351,37 @@ public class PopularMoviesFragment extends Fragment {
      */
     public class ImageAdapter extends ArrayAdapter<MovieItem> {
 
+        private final LayoutInflater mInflater;
         /**
          * The resource indicating what views to inflate to display the content of this
          * array adapter.
          */
         private int mResource;
-        private final LayoutInflater mInflater;
         private Context mContext;
+        private ArrayList<MovieItem> mObjects;
 
         public ImageAdapter(Context context, int resource, ArrayList<MovieItem> objects) {
             super(context, resource, objects);
             mResource = resource;
             mInflater = LayoutInflater.from(context);
             mContext = context;
+            mObjects = objects;
+        }
+
+        // add object only if does not exist
+        @Override
+        public void add(MovieItem object) {
+            if (!mObjects.contains(object)) {
+                super.add(object);
+            }
+        }
+
+        // add all objects that are not already in list
+        @Override
+        public void addAll(Collection<? extends MovieItem> collection) {
+            ArrayList<MovieItem> temp = new ArrayList<>(collection);
+            temp.removeAll(mObjects);
+            super.addAll(temp);
         }
 
         @Override
@@ -304,7 +397,7 @@ public class PopularMoviesFragment extends Fragment {
 
             imageView = (ImageView) rootView.findViewById(R.id.grid_item_movies_imageview);
 
-            MovieItem item = getItem(position);
+            MovieItem item = mObjects.get(position); //getItem(position);
             Picasso.with(mContext).load(item.getPosterPath()).into(imageView);
 
             return rootView;

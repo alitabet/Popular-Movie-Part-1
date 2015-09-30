@@ -17,10 +17,19 @@
     <!-- URL to for the MovieDB API -->
     <string name="moviedb_url" translatable="false">http://api.themoviedb.org/3/discover/movie?</string>
 
-    <!-- URL to for the MovieDB API -->
+    <!-- URL to for the Poster fetch -->
+    <string name="poster_url" translatable="false">http://image.tmdb.org/t/p/w185</string>
+
+    <!-- URL to for the Thumbnail fetch (same os poser fetch but with higher res image -->
+    <string name="thumb_url" translatable="false">http://image.tmdb.org/t/p/w500</string>
+
+    <!-- Sort parameter for MovieDB URL -->
     <string name="moviedb_sort_param" translatable="false">sort_by</string>
 
-    <!-- URL to for the MovieDB API -->
+    <!-- Page parameter for MovieDB URL  -->
+    <string name="moviedb_page_param" translatable="false">page</string>
+
+    <!-- API Key parameter for MovieDB URL  -->
     <string name="moviedb_api_key_param" translatable="false">api_key</string>
 
     <!-- API Key (Need to place it somewhere else before submitting) -->
