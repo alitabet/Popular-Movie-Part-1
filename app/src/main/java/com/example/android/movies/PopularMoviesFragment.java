@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -45,12 +44,8 @@ import java.util.Collection;
 public class PopularMoviesFragment extends Fragment {
 
     private final String LOG_TAG = PopularMoviesFragment.class.getSimpleName();
-    private final int MAX_PAGES = 1000; // maximum page value allowed by API
+    private final int MAX_PAGES = 10; // maximum page value allowed by API
     private ImageAdapter mMoviesAdaptor; // adaptor to interact with GridView
-
-    Parcelable mListState; // save state of list
-    GridView gridView;
-    private int mCurrentPage;
 
     public PopularMoviesFragment() {
     }
@@ -58,32 +53,8 @@ public class PopularMoviesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCurrentPage = 0;
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onPause() {
-        Log.v(LOG_TAG,"Pausing with " + mCurrentPage + " pages.");
-        mListState = gridView.onSaveInstanceState();
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        Log.v(LOG_TAG,"Resuming with " + mCurrentPage + " pages.");
-
-        for (int i = 0; i < mCurrentPage; i++)
-            updateMovies(i);
-
-        if (mListState != null) {
-            gridView.onRestoreInstanceState(mListState);
-        }
-
-        mListState = null;
     }
 
     @Override
@@ -98,7 +69,8 @@ public class PopularMoviesFragment extends Fragment {
 
         // get a reference to the GridView and attach the ImageAdaptor to it
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        gridView = (GridView) rootView.findViewById(R.id.gridview_movies);
+
+        GridView gridView = (GridView) rootView.findViewById(R.id.gridview_movies);
         gridView.setAdapter(mMoviesAdaptor);
 
         // set a listener for clicking on a movie poster
@@ -108,7 +80,7 @@ public class PopularMoviesFragment extends Fragment {
             // the MovieItem corresponding to the clicked poster
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                MovieItem movie = (MovieItem) mMoviesAdaptor.getItem(position);
+                MovieItem movie = mMoviesAdaptor.getItem(position);
                 Intent intent = new Intent(getActivity(), DetailActivity.class)
                         .putExtra(getString(R.string.detail_intent_movie_key), movie);
                 startActivity(intent);
@@ -136,11 +108,9 @@ public class PopularMoviesFragment extends Fragment {
                     if (totalItemCount > previousTotal) {
                         loading = false;
                         previousTotal = totalItemCount;
-                        //currentPage++;
                     }
                 } else if (totalItemCount != 0 && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
                     updateMovies(++currentPage);
-                    mCurrentPage = currentPage;
                     loading = true;
                 }
             }
@@ -151,13 +121,32 @@ public class PopularMoviesFragment extends Fragment {
     // fetch movie data from MovieDB API using an AsyncTask
     private void updateMovies(Integer pageNumber) {
         FetchMoviesTask moviesTask = new FetchMoviesTask();
-        moviesTask.execute(pageNumber.toString());
+        // Fetch from preferences whether to sort
+        // by popularity or user rating
+        SharedPreferences sharedPrefs =
+                PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String sortType = sharedPrefs.getString(
+                getString(R.string.pref_sort_key),
+                getString(R.string.pref_sort_popular));
+
+        String sortBy = getString(R.string.pref_sort_popular_api);
+        if (sortType.equals(getString(R.string.pref_sort_rated)))
+            sortBy = getString(R.string.pref_sort_rated_api);
+        String[] params = {pageNumber.toString(), sortBy};
+        moviesTask.execute(params);
     }
+
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        updateMovies(1);
+//    }
 
     // when fragment starts, load movie data
     @Override
     public void onStart() {
         super.onStart();
+        mMoviesAdaptor.clear();
         updateMovies(1);
     }
 
@@ -227,14 +216,11 @@ public class PopularMoviesFragment extends Fragment {
         @Override
         protected ArrayList<MovieItem> doInBackground(String... params) {
 
-            String pageRequested;
-
+            String pageRequested = "1";
+            String sortBy = getString(R.string.pref_sort_popular_api); ;
             // Check the input
-            if (params.length < 1) {
-                pageRequested = "1";
-            } else {
-                pageRequested = params[0];
-            }
+            if (params.length > 1) sortBy = params[1];
+            if (params.length > 0) pageRequested = params[0];
 
             // if requested page is out of bound then return
             if (Integer.parseInt(pageRequested) > MAX_PAGES) return new ArrayList<>();
@@ -246,18 +232,6 @@ public class PopularMoviesFragment extends Fragment {
 
             // Will contain the raw JSON response as a string.
             String moviesJsonStr = null;
-
-            // Fetch from preferences whether to sort
-            // by popularity or user rating
-            SharedPreferences sharedPrefs =
-                    PreferenceManager.getDefaultSharedPreferences(getActivity());
-            String sortType = sharedPrefs.getString(
-                    getString(R.string.pref_sort_key),
-                    getString(R.string.pref_sort_popular));
-
-            String sortBy = getString(R.string.pref_sort_popular_api);
-            if (sortType.equals(getString(R.string.pref_sort_rated)))
-                sortBy = getString(R.string.pref_sort_rated_api);
 
             String apiKey = getActivity().getString(R.string.api_key);
 

@@ -2,12 +2,26 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+
     </style>
 
-    <style name="MovieDetailText" parent="Base.TextAppearance.AppCompat">
+    <style name="MovieDetailTextHeading" parent="Base.TextAppearance.AppCompat">
         <item name="android:textSize">24sp</item>
-        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColor">@android:color/white</item>
         <item name="android:paddingBottom">4dp</item>
+    </style>
+
+    <style name="MovieDetailTextSubHeading" parent="Base.TextAppearance.AppCompat">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:paddingBottom">4dp</item>
+    </style>
+
+    <style name="SynopsisHeadingText" parent="Base.TextAppearance.AppCompat.Subhead">
+
+    </style>
+
+    <style name="SynopsisBodyText" parent="Base.TextAppearance.AppCompat.Body1">
+
     </style>
 </resources>
