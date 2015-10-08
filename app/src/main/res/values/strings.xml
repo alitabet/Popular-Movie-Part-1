@@ -32,9 +32,6 @@
     <!-- API Key parameter for MovieDB URL  -->
     <string name="moviedb_api_key_param" translatable="false">api_key</string>
 
-    <!-- API Key (Need to place it somewhere else before submitting) -->
-    <string name="api_key" translatable="false">202410d3d61cc5aed598956dee360226</string>
-
     <!-- ******************** Strings for sorting preference ******************** -->
 
     <!-- Label for the sorting preference -->

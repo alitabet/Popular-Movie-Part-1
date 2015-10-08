@@ -234,7 +234,6 @@ public class PopularMoviesFragment extends Fragment {
             String moviesJsonStr = null;
 
             String apiKey = getActivity().getString(R.string.api_key);
-
             try {
                 // Construct the URL for the MovieDB API query
                 // using the API Key and sorting parameters
