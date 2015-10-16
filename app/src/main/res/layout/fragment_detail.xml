@@ -7,7 +7,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -29,8 +29,26 @@
                 android:id="@+id/title_text"
                 style="@style/MovieDetailTextHeading"
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="TITLE" />
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/date_text_label"
+                    style="@style/MovieDetailTextDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/rating_text_label"
+                    style="@style/MovieDetailTextRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -42,15 +60,13 @@
                     style="@style/MovieDetailTextSubHeading"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="DATE" />
+                    android:layout_weight="1" />
 
                 <TextView
                     android:id="@+id/rating_text"
                     style="@style/MovieDetailTextSubHeading"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="RATING" />
+                    android:layout_height="wrap_content" />
             </LinearLayout>
 
         </LinearLayout>
@@ -58,10 +74,7 @@
         <TextView
             style="@style/SynopsisHeadingText"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="8dp"
-            android:text="synopsis"
-            android:textAllCaps="true" />
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/synopsis_text"

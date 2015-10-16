@@ -199,10 +199,18 @@ public class PopularMoviesFragment extends Fragment {
                 JSONObject movie = movieArray.getJSONObject(i); // get the current movie data
                 temp.setId(movie.getInt(MDB_ID)); // movie id
                 temp.setTitle(movie.getString(MDB_TITLE)); // original title
-                temp.setPosterPath(getString(R.string.poster_url)
-                        + movie.getString(MDB_POSTER)); // URL to poster
-                temp.setThumbPath(getString(R.string.thumb_url)
-                        + movie.getString(MDB_THUMB)); // URL to thumbnail
+                if (movie.getString(MDB_POSTER) == "null") {
+                    temp.setPosterPath(null);
+                } else {
+                    temp.setPosterPath(getString(R.string.poster_url)
+                            + movie.getString(MDB_POSTER)); // URL to poster
+                }
+                if (movie.getString(MDB_THUMB) == "null") {
+                    temp.setThumbPath(null);
+                } else {
+                    temp.setThumbPath(getString(R.string.thumb_url)
+                            + movie.getString(MDB_THUMB)); // URL to thumbnail
+                }
                 temp.setReleaseDate(movie.getString(MDB_REL_DATE)); // release date
                 temp.setSynopsis(movie.getString(MDB_SYNP)); // synopsis
                 temp.setRating(movie.getDouble(MDB_RATING)); // get user rating
@@ -217,7 +225,7 @@ public class PopularMoviesFragment extends Fragment {
         protected ArrayList<MovieItem> doInBackground(String... params) {
 
             String pageRequested = "1";
-            String sortBy = getString(R.string.pref_sort_popular_api); ;
+            String sortBy = getString(R.string.pref_sort_popular_api);
             // Check the input
             if (params.length > 1) sortBy = params[1];
             if (params.length > 0) pageRequested = params[0];
@@ -360,7 +368,6 @@ public class PopularMoviesFragment extends Fragment {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View rootView;
-            ImageView imageView;
 
             if (convertView == null) {
                 rootView = mInflater.inflate(mResource, parent, false);
@@ -368,10 +375,15 @@ public class PopularMoviesFragment extends Fragment {
                 rootView = convertView;
             }
 
-            imageView = (ImageView) rootView.findViewById(R.id.grid_item_movies_imageview);
+            ImageView imageView = (ImageView) rootView.findViewById(R.id.grid_item_movies_imageview);
 
-            MovieItem item = mObjects.get(position); //getItem(position);
-            Picasso.with(mContext).load(item.getPosterPath()).into(imageView);
+            MovieItem item = mObjects.get(position);
+
+            String posterPath = item.getPosterPath();
+
+            if (posterPath == null) posterPath = getString(R.string.poster_url_alt);
+
+            Picasso.with(mContext).load(posterPath).into(imageView);
 
             return rootView;
         }

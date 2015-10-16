@@ -11,6 +11,22 @@
         <item name="android:paddingBottom">4dp</item>
     </style>
 
+    <style name="MovieDetailTextDate" parent="Base.TextAppearance.AppCompat">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:paddingBottom">4dp</item>
+        <item name="android:text">@string/release_date_label</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="MovieDetailTextRating" parent="Base.TextAppearance.AppCompat">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:paddingBottom">4dp</item>
+        <item name="android:text">@string/user_rating_label</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
     <style name="MovieDetailTextSubHeading" parent="Base.TextAppearance.AppCompat">
         <item name="android:textSize">18sp</item>
         <item name="android:textColor">@android:color/white</item>
@@ -18,7 +34,11 @@
     </style>
 
     <style name="SynopsisHeadingText" parent="Base.TextAppearance.AppCompat.Subhead">
-
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:text">@string/synopsis_label</item>
+        <item name="android:textAllCaps">true</item>
     </style>
 
     <style name="SynopsisBodyText" parent="Base.TextAppearance.AppCompat.Body1">

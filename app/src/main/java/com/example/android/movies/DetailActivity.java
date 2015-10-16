@@ -70,7 +70,7 @@ public class DetailActivity extends ActionBarActivity {
             if (intent != null &&
                     intent.hasExtra(getString(R.string.detail_intent_movie_key))) {
                 // get the MovieItem object passed thought he intent
-                MovieItem movie = (MovieItem) intent.getExtras().
+                MovieItem movie = intent.getExtras().
                         getParcelable(getString(R.string.detail_intent_movie_key));
 
                 // display title, release date, and user rating
@@ -84,7 +84,12 @@ public class DetailActivity extends ActionBarActivity {
 
                 // fetch thumbnail using thumbnail URL
                 ImageView imageView = (ImageView) rootView.findViewById(R.id.thumb_imageview);
-                Picasso.with(getActivity()).load(movie.getThumbPath()).into(imageView);
+
+                String thumbPath = movie.getThumbPath();
+
+                if (thumbPath == null) thumbPath = getString(R.string.thumb_url_alt);
+
+                Picasso.with(getActivity()).load(thumbPath).into(imageView);
 
                 // extract synopsis
                 ((TextView) rootView.findViewById(R.id.synopsis_text))
