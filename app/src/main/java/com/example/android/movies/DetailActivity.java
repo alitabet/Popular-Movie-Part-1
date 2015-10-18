@@ -14,6 +14,9 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 public class DetailActivity extends ActionBarActivity {
 
     @Override
@@ -64,7 +67,7 @@ public class DetailActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
 
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-
+            ViewHolder viewHolder = new ViewHolder(rootView);
             // The detail Activity called via intent.  Inspect the intent for movie data.
             Intent intent = getActivity().getIntent();
             if (intent != null &&
@@ -74,29 +77,48 @@ public class DetailActivity extends ActionBarActivity {
                         getParcelable(getString(R.string.detail_intent_movie_key));
 
                 // display title, release date, and user rating
-                ((TextView) rootView.findViewById(R.id.title_text))
+                viewHolder.titleText
                         .setText(movie.getTitle());
-                ((TextView) rootView.findViewById(R.id.date_text))
+                viewHolder.dateText
                         .setText(movie.getReleaseDate());
                 // user rating rounded to 2 decimal places
-                ((TextView) rootView.findViewById(R.id.rating_text))
+                viewHolder.ratingText
                         .setText(String.format("%.2f", movie.getRating()));
 
                 // fetch thumbnail using thumbnail URL
-                ImageView imageView = (ImageView) rootView.findViewById(R.id.thumb_imageview);
-
                 String thumbPath = movie.getThumbPath();
 
                 if (thumbPath == null) thumbPath = getString(R.string.thumb_url_alt);
 
-                Picasso.with(getActivity()).load(thumbPath).into(imageView);
+                Picasso.with(getActivity()).load(thumbPath).into(viewHolder.thumbImage);
 
                 // extract synopsis
-                ((TextView) rootView.findViewById(R.id.synopsis_text))
+                viewHolder.synopsisText
                         .setText(movie.getSynopsis());
             }
 
             return rootView;
+        }
+    }
+
+    static class ViewHolder {
+        @Bind(R.id.title_text)
+        TextView titleText;
+
+        @Bind(R.id.date_text)
+        TextView dateText;
+
+        @Bind(R.id.rating_text)
+        TextView ratingText;
+
+        @Bind(R.id.synopsis_text)
+        TextView synopsisText;
+
+        @Bind(R.id.thumb_imageview)
+        ImageView thumbImage;
+
+        public ViewHolder(View view) {
+            ButterKnife.bind(this, view);
         }
     }
 }
