@@ -1,5 +1,5 @@
-# Popular-Movie-Part-1
-Udacity Android Nanodegree project 1: Popular Movies Part 1
+# Popular-Movie-Part-2
+Udacity Android Nanodegree project 2: Popular Movies Part 2
 
 The Popular Movies app retrieves movie information from [The Movie Database (TMDb)](https://www.themoviedb.org). The movies are presented to the user initially in poster format, where she can choose a specific movie to get additional details.
 
