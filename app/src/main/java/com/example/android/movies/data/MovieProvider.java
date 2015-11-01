@@ -66,6 +66,7 @@ public class MovieProvider extends ContentProvider {
         switch(sUriMatcher.match(uri)){
             // All Movies selected
             case MOVIE: {
+                // We will limit the query to only a certain max
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         MovieContract.MovieEntry.TABLE_NAME,
                         projection,

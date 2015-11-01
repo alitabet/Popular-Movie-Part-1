@@ -1,8 +1,12 @@
 package com.example.android.movies;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -12,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.android.movies.data.MovieContract;
 import com.squareup.picasso.Picasso;
 
 import butterknife.Bind;
@@ -57,7 +62,10 @@ public class DetailActivity extends ActionBarActivity {
      * This fragment will display the details of the
      * selected movie.
      */
-    public static class DetailFragment extends Fragment {
+    public static class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+        private static final int DETAIL_LOADER = 1;
+        ViewHolder viewHolder;
+        private String uriString;
 
         public DetailFragment() {
         }
@@ -67,37 +75,60 @@ public class DetailActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
 
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-            ViewHolder viewHolder = new ViewHolder(rootView);
-            // The detail Activity called via intent.  Inspect the intent for movie data.
-            Intent intent = getActivity().getIntent();
-            if (intent != null &&
-                    intent.hasExtra(getString(R.string.detail_intent_movie_key))) {
-                // get the MovieItem object passed thought he intent
-                MovieItem movie = intent.getExtras().
-                        getParcelable(getString(R.string.detail_intent_movie_key));
-
-                // display title, release date, and user rating
-                viewHolder.titleText
-                        .setText(movie.getTitle());
-                viewHolder.dateText
-                        .setText(movie.getReleaseDate());
-                // user rating rounded to 2 decimal places
-                viewHolder.ratingText
-                        .setText(String.format("%.2f", movie.getRating()));
-
-                // fetch thumbnail using thumbnail URL
-                String thumbPath = movie.getThumbPath();
-
-                if (thumbPath == null) thumbPath = getString(R.string.thumb_url_alt);
-
-                Picasso.with(getActivity()).load(thumbPath).into(viewHolder.thumbImage);
-
-                // extract synopsis
-                viewHolder.synopsisText
-                        .setText(movie.getSynopsis());
-            }
+            viewHolder = new ViewHolder(rootView);
 
             return rootView;
+        }
+
+        @Override
+        public void onActivityCreated(Bundle savedInstanceState) {
+            getLoaderManager().initLoader(DETAIL_LOADER, null, this);
+            super.onActivityCreated(savedInstanceState);
+        }
+
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+            Intent intent = getActivity().getIntent();
+            if (intent == null) return null;
+
+            return new CursorLoader(getActivity(),
+                    intent.getData(),
+                    MovieContract.MovieEntry.MOVIE_COLUMNS,
+                    null,
+                    null,
+                    null);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+            if (!data.moveToFirst()) { return; }
+
+            MovieItem movie = new MovieItem(data);
+
+            // display title, release date, and user rating
+            viewHolder.titleText
+                    .setText(movie.getTitle());
+            viewHolder.dateText
+                    .setText(movie.getReleaseDate());
+            // user rating rounded to 2 decimal places
+            viewHolder.ratingText
+                    .setText(String.format("%.2f", movie.getRating()));
+
+            // fetch thumbnail using thumbnail URL
+            String thumbPath = movie.getThumbPath();
+
+            if (thumbPath == null) thumbPath = getString(R.string.thumb_url_alt);
+
+            Picasso.with(getActivity()).load(thumbPath).into(viewHolder.thumbImage);
+
+            // extract synopsis
+            viewHolder.synopsisText
+                    .setText(movie.getSynopsis());
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+
         }
     }
 

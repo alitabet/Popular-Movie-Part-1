@@ -1,9 +1,14 @@
 package com.example.android.movies;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.example.android.movies.data.MovieContract;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,46 +20,48 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Vector;
 
 /**
  * AsyncTask to run background thread and fetch data from
  * the MovieDB API. The task wil return an ArrayList of
  * <em>MovieItem</em> objects
  */
-public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<MovieItem>> {
+public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
 
     // LOG_TAG used for debugging
     private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
 
     private Context mContext;
-    private ImageAdapter mImageAdapter;
 
-    public FetchMoviesTask(Context context, ImageAdapter imageAdapter) {
+    public FetchMoviesTask(Context context) {
         mContext = context;
-        mImageAdapter = imageAdapter;
     }
 
     // this function parses a JSON string containing movie
     // information into an ArrayList of <em>MovieItem</em>
     // objects
-    private ArrayList<MovieItem> getMoviesFromJsonStr(String movieJsonStr)
+    private void getMoviesFromJsonStr(String movieJsonStr)
             throws JSONException {
 
         // These are the names of the JSON objects that need to be extracted.
         final String MDB_TOTAL_PAGES = "total_pages";
-        final String MDB_LIST = "results";
-        final String MDB_ID = "id";
-        final String MDB_TITLE = "original_title";
-        final String MDB_THUMB = "backdrop_path";
-        final String MDB_SYNP = "overview";
-        final String MDB_REL_DATE = "release_date";
-        final String MDB_POSTER = "poster_path";
-        final String MDB_RATING = "vote_average";
+        final String MDB_LIST        = "results";
+        final String MDB_ID          = "id";
+        final String MDB_TITLE       = "original_title";
+        final String MDB_THUMB       = "backdrop_path";
+        final String MDB_SYNP        = "overview";
+        final String MDB_REL_DATE    = "release_date";
+        final String MDB_POSTER      = "poster_path";
+        final String MDB_RATING      = "vote_average";
+        final String MDB_POPULARITY  = "popularity";
 
         JSONObject movieJson = new JSONObject(movieJsonStr);
 
         JSONArray movieArray = movieJson.getJSONArray(MDB_LIST);
+
+        // Insert th movie data into the database
+        Vector<ContentValues> cVVector = new Vector<>(movieArray.length());
 
         // The JSON object returns a list of the most popular movies
         // and for each movie provides some useful information. We are
@@ -65,7 +72,7 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<MovieItem
         // We will store the results of the MDB
         // in a Lis of <em>MovieItem</em> objects
 
-        ArrayList<MovieItem> movieList = new ArrayList<>();
+//        ArrayList<MovieItem> movieList = new ArrayList<>();
 
         for (int i = 0; i < movieArray.length(); i++) {
 
@@ -89,24 +96,35 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<MovieItem
             temp.setReleaseDate(movie.getString(MDB_REL_DATE)); // release date
             temp.setSynopsis(movie.getString(MDB_SYNP)); // synopsis
             temp.setRating(movie.getDouble(MDB_RATING)); // get user rating
+            temp.setPopularity(movie.getDouble(MDB_POPULARITY)); // get the movie popularity
 
-            movieList.add(temp); // add the extracted movie to the return list
+            cVVector.add(temp.getContentValues()); // Add the ContentValue of retrieved movie
         }
 
-        return movieList;
+        // add to database
+        if ( cVVector.size() > 0 ) {
+            ContentValues[] cvArray = new ContentValues[cVVector.size()];
+            cVVector.toArray(cvArray);
+            mContext.getContentResolver().bulkInsert(MovieContract.MovieEntry.CONTENT_URI, cvArray);
+        }
+
+        String sortOrder = Utility.getSortOrder(mContext);
+        Cursor cursor = mContext.getContentResolver().query(MovieContract.MovieEntry.CONTENT_URI,
+                null, null, null, sortOrder);
+
+        cVVector = new Vector<>(cursor.getCount());
+        if ( cursor.moveToFirst() ) {
+            do {
+                ContentValues cv = new ContentValues();
+                DatabaseUtils.cursorRowToContentValues(cursor, cv);
+                cVVector.add(cv);
+            } while (cursor.moveToNext());
+        }
+
+        Log.i(LOG_TAG, "Number of movies retrieved: " + cVVector.size());
     }
 
-    @Override
-    protected ArrayList<MovieItem> doInBackground(String... params) {
-
-        String pageRequested = "1";
-        String sortBy = mContext.getString(R.string.pref_sort_popular_api);
-        // Check the input
-        if (params.length > 1) sortBy = params[1];
-        if (params.length > 0) pageRequested = params[0];
-
-        // if requested page is out of bound then return
-        if (Integer.parseInt(pageRequested) > PopularMoviesFragment.MAX_PAGES) return new ArrayList<>();
+    private boolean getData(String sortBy, String apiKey, String pageRequested) {
 
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -116,7 +134,6 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<MovieItem
         // Will contain the raw JSON response as a string.
         String moviesJsonStr = null;
 
-        String apiKey = mContext.getString(R.string.api_key);
         try {
             // Construct the URL for the MovieDB API query
             // using the API Key and sorting parameters
@@ -143,7 +160,7 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<MovieItem
             StringBuffer buffer = new StringBuffer();
             if (inputStream == null) {
                 // Nothing to do.
-                return null;
+                return false;
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
@@ -156,15 +173,19 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<MovieItem
 
             if (buffer.length() == 0) {
                 // Stream was empty.  No point in parsing.
-                return null;
+                return false;
             }
             moviesJsonStr = buffer.toString();
+            getMoviesFromJsonStr(moviesJsonStr);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
             // if the code couldn't get the movie data then no need
             // to parse it
-            return null;
-        } finally {
+            return false;
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        }finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
@@ -176,24 +197,29 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<MovieItem
                 }
             }
         }
-        try {
-            return getMoviesFromJsonStr(moviesJsonStr);
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
-        }
 
-        // This will only happen if there was an error getting or parsing the movie data.
-        return null;
+        return true;
     }
 
     @Override
-    protected void onPostExecute(ArrayList<MovieItem> results) {
-        // if the task managed to read data from
-        // the MovieDB API, then store it in the
-        // custom adapter
-        if (results != null) {
-            mImageAdapter.addAll(results);
+    protected Void doInBackground(String... params) {
+
+        String pagesRequested = "1";
+        String sortBy = mContext.getString(R.string.pref_sort_popular_api);
+        // Check the input
+        if (params.length > 1) sortBy = params[1];
+        if (params.length > 0) pagesRequested = params[0];
+
+        // if requested page is out of bound then return
+        if (Integer.parseInt(pagesRequested) > PopularMoviesFragment.MAX_PAGES) return null;
+
+        String apiKey = mContext.getString(R.string.api_key);
+
+        // fetch all the movies from pages 1 to pagesRequested
+        for (int i = 1; i <= Integer.parseInt(pagesRequested); i++) {
+            getData(sortBy, apiKey, String.valueOf(i));
         }
+
+        return null;
     }
 }

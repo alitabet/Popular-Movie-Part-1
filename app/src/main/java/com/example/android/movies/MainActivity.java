@@ -8,13 +8,18 @@ import android.view.MenuItem;
 
 public class MainActivity extends ActionBarActivity {
 
+    private final String MOVIEFRAGMENT_TAG = "MFTAG";
+
+    private String mSortOrder;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mSortOrder = Utility.getSortOrder(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PopularMoviesFragment())
+                    .add(R.id.container, new PopularMoviesFragment(), MOVIEFRAGMENT_TAG)
                     .commit();
         }
     }
@@ -41,5 +46,22 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String sortOrder = Utility.getSortOrder(this);
+
+        // update the sort order if it has changes
+        if (sortOrder != null && !sortOrder.equals(mSortOrder)) {
+            PopularMoviesFragment moviesFragment = (PopularMoviesFragment)
+                    getSupportFragmentManager().findFragmentByTag(MOVIEFRAGMENT_TAG);
+
+            if (moviesFragment != null) {
+                moviesFragment.onSortOrderChanged();
+            }
+            mSortOrder = sortOrder;
+        }
     }
 }
