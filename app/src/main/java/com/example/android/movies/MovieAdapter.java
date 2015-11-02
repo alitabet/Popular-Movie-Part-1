@@ -29,7 +29,7 @@ public class MovieAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         ImageView imageView = (ImageView) view;
-        String posterPath = cursor.getString(MovieContract.MovieEntry.COL_MOVIE_POSTER);
+        String posterPath = cursor.getString(MovieContract.COL_MOVIE_POSTER);
 
         if (posterPath == null) posterPath = context.getString(R.string.poster_url_alt);
 

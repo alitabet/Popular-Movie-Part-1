@@ -93,7 +93,7 @@ public class DetailActivity extends ActionBarActivity {
 
             return new CursorLoader(getActivity(),
                     intent.getData(),
-                    MovieContract.MovieEntry.MOVIE_COLUMNS,
+                    MovieContract.MOVIE_COLUMNS,
                     null,
                     null,
                     null);

@@ -19,15 +19,41 @@ import com.example.android.movies.data.MovieContract;
  */
 public class MovieItem implements Parcelable {
 
-//    @SerializedName("")
-//    @Expose
+    // These are the names of the JSON objects that need to be extracted.
+    public static final String MDB_TOTAL_PAGES = "total_pages";
+    public static final String MDB_LIST        = "results";
+    public static final String MDB_ID          = "id";
+    public static final String MDB_TITLE       = "original_title";
+    public static final String MDB_THUMB       = "backdrop_path";
+    public static final String MDB_SYNP        = "overview";
+    public static final String MDB_REL_DATE    = "release_date";
+    public static final String MDB_POSTER      = "poster_path";
+    public static final String MDB_RATING      = "vote_average";
+    public static final String MDB_POPULARITY  = "popularity";
+
+// @SerializedName(MDB_ID)
+// @Expose
     private Integer id;         // unique ID for movie
+// @SerializedName(MDB_TITLE)
+// @Expose
     private String title;       // title of the movie
+// @SerializedName(MDB_POSTER)
+// @Expose
     private String posterPath;  // URL path to poster image
+// @SerializedName(MDB_THUMB)
+// @Expose
     private String thumbPath;   // URL path to thumbnail image
+// @SerializedName(MDB_REL_DATE)
+// @Expose
     private String releaseDate; // movie release date
+// @SerializedName(MDB_RATING)
+// @Expose
     private Double rating;      // movie rating
+// @SerializedName(MDB_POPULARITY)
+// @Expose
     private Double popularity;  // popularity of movie in MovieDB
+// @SerializedName(MDB_SYNP)
+// @Expose
     private String synopsis;    // Movie synopsis
 
     public MovieItem() {
@@ -44,14 +70,14 @@ public class MovieItem implements Parcelable {
         this.releaseDate = contentValues.getAsString(MovieContract.MovieEntry.COLUMN_RELEASE_DATE);
     }
     public MovieItem(Cursor cursor) {
-        this.id          = cursor.getInt(MovieContract.MovieEntry.COL_MOVIE_ID);
-        this.title       = cursor.getString(MovieContract.MovieEntry.COL_MOVIE_TITLE);
-        this.rating      = cursor.getDouble(MovieContract.MovieEntry.COL_MOVIE_RATING);
-        this.popularity  = cursor.getDouble(MovieContract.MovieEntry.COL_MOVIE_POPULARITY);
-        this.synopsis    = cursor.getString(MovieContract.MovieEntry.COL_MOVIE_SYNOPSIS);
-        this.posterPath  = cursor.getString(MovieContract.MovieEntry.COL_MOVIE_POSTER);
-        this.thumbPath   = cursor.getString(MovieContract.MovieEntry.COL_MOVIE_THUMB);
-        this.releaseDate = cursor.getString(MovieContract.MovieEntry.COL_MOVIE_RELEASE_DATE);
+        this.id          = cursor.getInt(MovieContract.COL_MOVIE_ID);
+        this.title       = cursor.getString(MovieContract.COL_MOVIE_TITLE);
+        this.rating      = cursor.getDouble(MovieContract.COL_MOVIE_RATING);
+        this.popularity  = cursor.getDouble(MovieContract.COL_MOVIE_POPULARITY);
+        this.synopsis    = cursor.getString(MovieContract.COL_MOVIE_SYNOPSIS);
+        this.posterPath  = cursor.getString(MovieContract.COL_MOVIE_POSTER);
+        this.thumbPath   = cursor.getString(MovieContract.COL_MOVIE_THUMB);
+        this.releaseDate = cursor.getString(MovieContract.COL_MOVIE_RELEASE_DATE);
     }
     public String getSynopsis() {
         return synopsis;

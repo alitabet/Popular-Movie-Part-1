@@ -44,23 +44,23 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
     private void getMoviesFromJsonStr(String movieJsonStr)
             throws JSONException {
 
-        // These are the names of the JSON objects that need to be extracted.
-        final String MDB_TOTAL_PAGES = "total_pages";
-        final String MDB_LIST        = "results";
-        final String MDB_ID          = "id";
-        final String MDB_TITLE       = "original_title";
-        final String MDB_THUMB       = "backdrop_path";
-        final String MDB_SYNP        = "overview";
-        final String MDB_REL_DATE    = "release_date";
-        final String MDB_POSTER      = "poster_path";
-        final String MDB_RATING      = "vote_average";
-        final String MDB_POPULARITY  = "popularity";
+//        // These are the names of the JSON objects that need to be extracted.
+//        final String MDB_TOTAL_PAGES = "total_pages";
+//        final String MDB_LIST        = "results";
+//        final String MDB_ID          = "id";
+//        final String MDB_TITLE       = "original_title";
+//        final String MDB_THUMB       = "backdrop_path";
+//        final String MDB_SYNP        = "overview";
+//        final String MDB_REL_DATE    = "release_date";
+//        final String MDB_POSTER      = "poster_path";
+//        final String MDB_RATING      = "vote_average";
+//        final String MDB_POPULARITY  = "popularity";
 
         JSONObject movieJson = new JSONObject(movieJsonStr);
 
-        JSONArray movieArray = movieJson.getJSONArray(MDB_LIST);
+        JSONArray movieArray = movieJson.getJSONArray(MovieItem.MDB_LIST);
 
-        // Insert th movie data into the database
+        // Insert the movie data into the database
         Vector<ContentValues> cVVector = new Vector<>(movieArray.length());
 
         // The JSON object returns a list of the most popular movies
@@ -79,24 +79,24 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
             MovieItem temp = new MovieItem();
 
             JSONObject movie = movieArray.getJSONObject(i); // get the current movie data
-            temp.setId(movie.getInt(MDB_ID)); // movie id
-            temp.setTitle(movie.getString(MDB_TITLE)); // original title
-            if (movie.getString(MDB_POSTER) == "null") {
+            temp.setId(movie.getInt(MovieItem.MDB_ID)); // movie id
+            temp.setTitle(movie.getString(MovieItem.MDB_TITLE)); // original title
+            if (movie.getString(MovieItem.MDB_POSTER) == "null") {
                 temp.setPosterPath(null);
             } else {
                 temp.setPosterPath(mContext.getString(R.string.poster_url)
-                        + movie.getString(MDB_POSTER)); // URL to poster
+                        + movie.getString(MovieItem.MDB_POSTER)); // URL to poster
             }
-            if (movie.getString(MDB_THUMB) == "null") {
+            if (movie.getString(MovieItem.MDB_THUMB) == "null") {
                 temp.setThumbPath(null);
             } else {
                 temp.setThumbPath(mContext.getString(R.string.thumb_url)
-                        + movie.getString(MDB_THUMB)); // URL to thumbnail
+                        + movie.getString(MovieItem.MDB_THUMB)); // URL to thumbnail
             }
-            temp.setReleaseDate(movie.getString(MDB_REL_DATE)); // release date
-            temp.setSynopsis(movie.getString(MDB_SYNP)); // synopsis
-            temp.setRating(movie.getDouble(MDB_RATING)); // get user rating
-            temp.setPopularity(movie.getDouble(MDB_POPULARITY)); // get the movie popularity
+            temp.setReleaseDate(movie.getString(MovieItem.MDB_REL_DATE)); // release date
+            temp.setSynopsis(movie.getString(MovieItem.MDB_SYNP)); // synopsis
+            temp.setRating(movie.getDouble(MovieItem.MDB_RATING)); // get user rating
+            temp.setPopularity(movie.getDouble(MovieItem.MDB_POPULARITY)); // get the movie popularity
 
             cVVector.add(temp.getContentValues()); // Add the ContentValue of retrieved movie
         }

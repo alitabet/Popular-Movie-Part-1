@@ -5,7 +5,7 @@ import android.provider.BaseColumns;
 /**
  * Created by thabetak on 11/1/2015.
  */
-public class GeneralContract implements BaseColumns {
+public class GeneralEntry implements BaseColumns {
     // Movie title
     public static final String COLUMN_TITLE = "title";
     // Movie synopsis

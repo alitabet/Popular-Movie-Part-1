@@ -49,7 +49,7 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
         if (cursor != null) {
             Intent intent = new Intent(getActivity(), DetailActivity.class)
                     .setData(MovieContract.MovieEntry.buildMovieUri(
-                            cursor.getInt(MovieContract.MovieEntry.COL_MOVIE_ID)));
+                            cursor.getInt(MovieContract.COL_MOVIE_ID)));
 //                .putExtra(getString(R.string.detail_intent_movie_key), movie);
             startActivity(intent);
         }
@@ -133,7 +133,8 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
 
     // fetch movie data from MovieDB API using an AsyncTask
     private void updateMovies(int pageNumber) {
-        FetchMoviesTask moviesTask = new FetchMoviesTask(getActivity());
+//        Log.i(LOG_TAG, "Updating movies.");
+//        String api = "http://api.themoviedb.org/";
         // Fetch from preferences whether to sort
         // by popularity or user rating
         SharedPreferences sharedPrefs =
@@ -146,8 +147,31 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
         if (sortType.equals(getString(R.string.pref_sort_rated))) {
             sortBy = getString(R.string.pref_sort_rated_api);
         }
+//        String apiKey = getActivity().getString(R.string.api_key);
+
+//        Gson gson = new GsonBuilder()
+//                .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+//                .create();
+//
+//        Retrofit retrofit = new Retrofit.Builder()
+//                .baseUrl(api)
+//                .addConverterFactory(GsonConverterFactory.create(gson))
+//                .build();
+//
+//        // prepare call in Retrofit 2.0
+//        MovieDBApi movieDBApi = retrofit.create(MovieDBApi.class);
+//
+//        Map<String,String> queryMap = new HashMap<>();
+//        queryMap.put(getActivity().getString(R.string.moviedb_api_key_param),apiKey);
+//        queryMap.put(getActivity().getString(R.string.moviedb_sort_param),sortBy);
+//        queryMap.put(getActivity().getString(R.string.moviedb_page_param),"1");
+//
+//        Call<MovieResults> call = movieDBApi.getMovieResults(new HashMap<String, String>());
+//        //asynchronous call
+//        call.enqueue(this);
 
         String[] params = {String.valueOf(pageNumber), sortBy};
+        FetchMoviesTask moviesTask = new FetchMoviesTask(getActivity());
         moviesTask.execute(params);
     }
 
@@ -156,7 +180,7 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
         String sortOrder = Utility.getSortOrder(getActivity());
         return new CursorLoader(getActivity(),
                 MovieContract.MovieEntry.CONTENT_URI,
-                MovieContract.MovieEntry.MOVIE_COLUMNS,
+                MovieContract.MOVIE_COLUMNS,
                 null,
                 null,
                 sortOrder);
@@ -171,4 +195,31 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
     public void onLoaderReset(Loader<Cursor> loader) {
         mMoviesAdaptor.swapCursor(null);
     }
+
+//    @Override
+//    public void onResponse(Response<MovieResults> response, Retrofit retrofit) {
+//
+//        if (response.body() == null) return;
+//
+//        List<MovieItem> results = response.body().getResults();
+//        // Insert the movie data into the database
+//        if (results.size() > 0) {
+//            Vector<ContentValues> cVVector = new Vector<>(results.size());
+//
+//            for (MovieItem movieItem : results) {
+//                cVVector.add(movieItem.getContentValues());
+//            }
+//
+//            ContentValues[] cvArray = new ContentValues[cVVector.size()];
+//            cVVector.toArray(cvArray);
+//            getActivity().getContentResolver().bulkInsert(MovieContract.MovieEntry.CONTENT_URI, cvArray);
+//
+//        }
+//        Log.i(LOG_TAG, "Successful loading of " + results.size() + " items.");
+//    }
+//
+//    @Override
+//    public void onFailure(Throwable t) {
+//
+//    }
 }
