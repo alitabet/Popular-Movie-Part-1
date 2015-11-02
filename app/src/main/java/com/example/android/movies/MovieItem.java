@@ -19,6 +19,8 @@ import com.example.android.movies.data.MovieContract;
  */
 public class MovieItem implements Parcelable {
 
+//    @SerializedName("")
+//    @Expose
     private Integer id;         // unique ID for movie
     private String title;       // title of the movie
     private String posterPath;  // URL path to poster image
