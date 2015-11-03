@@ -44,18 +44,6 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
     private void getMoviesFromJsonStr(String movieJsonStr)
             throws JSONException {
 
-//        // These are the names of the JSON objects that need to be extracted.
-//        final String MDB_TOTAL_PAGES = "total_pages";
-//        final String MDB_LIST        = "results";
-//        final String MDB_ID          = "id";
-//        final String MDB_TITLE       = "original_title";
-//        final String MDB_THUMB       = "backdrop_path";
-//        final String MDB_SYNP        = "overview";
-//        final String MDB_REL_DATE    = "release_date";
-//        final String MDB_POSTER      = "poster_path";
-//        final String MDB_RATING      = "vote_average";
-//        final String MDB_POPULARITY  = "popularity";
-
         JSONObject movieJson = new JSONObject(movieJsonStr);
 
         JSONArray movieArray = movieJson.getJSONArray(MovieItem.MDB_LIST);
@@ -71,8 +59,6 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
         // "http://image.tmdb.org/t/p/w185" to get the absolute URL
         // We will store the results of the MDB
         // in a Lis of <em>MovieItem</em> objects
-
-//        ArrayList<MovieItem> movieList = new ArrayList<>();
 
         for (int i = 0; i < movieArray.length(); i++) {
 
@@ -106,27 +92,8 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
         if ( cVVector.size() > 0 ) {
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
-
-//            if (sortOrder.equals(mContext.getString(R.string.pref_sort_popular))) {
-//                mContext.getContentResolver().bulkInsert(MovieContract.MovieEntry.CONTENT_URI, cvArray);
-//            } else if (sortOrder.equals(mContext.getString(R.string.pref_sort_rated))) {
-//                mContext.getContentResolver().bulkInsert(MovieContract.MovieRatingEntry.CONTENT_URI, cvArray);
-//            }
-
             mContext.getContentResolver().bulkInsert(Utility.getUriFromSort(mContext), cvArray);
         }
-
-//        Cursor cursor = null;
-//        if (sortOrder.equals(mContext.getString(R.string.pref_sort_popular))) {
-//            cursor = mContext.getContentResolver().query(MovieContract.MovieEntry.CONTENT_URI,
-//                    null, null, null, sortOrder);
-//        }
-//        if (sortOrder.equals(mContext.getString(R.string.pref_sort_rated))) {
-//            cursor = mContext.getContentResolver().query(MovieContract.MovieRatingEntry.CONTENT_URI,
-//                    null, null, null, sortOrder);
-//        }
-//
-//        if (cursor == null) return;
 
         Cursor cursor = mContext.getContentResolver().query(Utility.getUriFromSort(mContext),
                     null, null, null, Utility.getSortOrder(mContext));
@@ -156,12 +123,12 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
         try {
             // Construct the URL for the MovieDB API query
             // using the API Key and sorting parameters
-            final String FORECAST_BASE_URL = mContext.getString(R.string.moviedb_url);
+            final String MOVIE_BASE_URL = mContext.getString(R.string.moviedb_url);
             final String SORT_PARAM = mContext.getString(R.string.moviedb_sort_param);
             final String PAGE_PARAM = mContext.getString(R.string.moviedb_page_param);
             final String KEY_PARAM = mContext.getString(R.string.moviedb_api_key_param);
 
-            Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
+            Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
                     .appendQueryParameter(SORT_PARAM, sortBy)
                     .appendQueryParameter(KEY_PARAM, apiKey)
                     .appendQueryParameter(PAGE_PARAM, pageRequested)

@@ -8,6 +8,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,12 +17,22 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.android.movies.api.MovieDBApi;
+import com.example.android.movies.api.results.ReviewResults;
 import com.example.android.movies.data.MovieContract;
 import com.example.android.movies.models.MovieItem;
+import com.example.android.movies.models.Review;
 import com.squareup.picasso.Picasso;
+
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import retrofit.Call;
+import retrofit.Callback;
+import retrofit.GsonConverterFactory;
+import retrofit.Response;
+import retrofit.Retrofit;
 
 public class DetailActivity extends ActionBarActivity {
 
@@ -64,6 +75,7 @@ public class DetailActivity extends ActionBarActivity {
      * selected movie.
      */
     public static class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+        private final String LOG_TAG = DetailFragment.class.getSimpleName();
         private static final int DETAIL_LOADER = 1;
         ViewHolder viewHolder;
         private String uriString;
@@ -125,6 +137,32 @@ public class DetailActivity extends ActionBarActivity {
             // extract synopsis
             viewHolder.synopsisText
                     .setText(movie.getSynopsis());
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(MovieDBApi.BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            MovieDBApi service = retrofit.create(MovieDBApi.class);
+            Call<ReviewResults> call = service.getReviews(String.valueOf(data.getInt(MovieContract.COL_MOVIE_ID)),
+                    BuildConfig.MOVIE_DB_API_KEY);
+            call.enqueue(new Callback<ReviewResults>() {
+                @Override
+                public void onResponse(Response<ReviewResults> response, Retrofit retrofit) {
+                    ReviewResults reviewResult = response.body();
+                    List<Review> reviewList = reviewResult.results;
+                    StringBuilder sb = new StringBuilder();
+                    for (Review review : reviewList) {
+                        sb.append(review.getContent() + "\n");
+                    }
+                    viewHolder.reviewText.setText(sb.toString());
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    Log.e(LOG_TAG, "Error loading review: " + t.getMessage());
+                }
+            });
         }
 
         @Override
@@ -145,6 +183,9 @@ public class DetailActivity extends ActionBarActivity {
 
         @Bind(R.id.synopsis_text)
         TextView synopsisText;
+
+        @Bind(R.id.review_text)
+        TextView reviewText;
 
         @Bind(R.id.thumb_imageview)
         ImageView thumbImage;
