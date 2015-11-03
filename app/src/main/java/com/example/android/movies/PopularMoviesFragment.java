@@ -14,6 +14,7 @@ import android.widget.GridView;
 
 import com.example.android.movies.adapters.MovieAdapter;
 import com.example.android.movies.data.MovieContract;
+import com.example.android.movies.service.PopularMoviesService;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -119,9 +120,10 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
             sortBy = getString(R.string.pref_sort_rated_api);
         }
 
-        String[] params = {String.valueOf(pageNumber), sortBy};
-        FetchMoviesTask moviesTask = new FetchMoviesTask(getActivity());
-        moviesTask.execute(params);
+        Intent intent = new Intent(getActivity(), PopularMoviesService.class);
+        intent.putExtra(PopularMoviesService.SORT_QUERY_EXTRA, sortBy);
+        intent.putExtra(PopularMoviesService.PAGE_QUERY_EXTRA, String.valueOf(pageNumber));
+        getActivity().startService(intent);
     }
 
     @Override

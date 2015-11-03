@@ -1,13 +1,17 @@
-package com.example.android.movies;
+package com.example.android.movies.service;
 
+import android.app.IntentService;
 import android.content.ContentValues;
-import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
 
+import com.example.android.movies.BuildConfig;
+import com.example.android.movies.PopularMoviesFragment;
+import com.example.android.movies.R;
+import com.example.android.movies.Utility;
 import com.example.android.movies.models.MovieItem;
 
 import org.json.JSONArray;
@@ -23,24 +27,17 @@ import java.net.URL;
 import java.util.Vector;
 
 /**
- * AsyncTask to run background thread and fetch data from
- * the MovieDB API. The task wil return an ArrayList of
- * <em>MovieItem</em> objects
+ * Created by thabetak on 11/3/2015.
  */
-public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
+public class PopularMoviesService extends IntentService {
+    public static final String SORT_QUERY_EXTRA = "sqe";
+    public static final String PAGE_QUERY_EXTRA = "pqe";
+    public static final String LOG_TAG = PopularMoviesService.class.getSimpleName();
 
-    // LOG_TAG used for debugging
-    private final String LOG_TAG = FetchMoviesTask.class.getSimpleName();
-
-    private Context mContext;
-
-    public FetchMoviesTask(Context context) {
-        mContext = context;
+    public PopularMoviesService() {
+        super("PopularMovies");
     }
 
-    // this function parses a JSON string containing movie
-    // information into an ArrayList of <em>MovieItem</em>
-    // objects
     private void getMoviesFromJsonStr(String movieJsonStr)
             throws JSONException {
 
@@ -70,13 +67,13 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
             if (movie.getString(MovieItem.MDB_POSTER) == "null") {
                 temp.setPosterPath(null);
             } else {
-                temp.setPosterPath(mContext.getString(R.string.poster_url)
+                temp.setPosterPath(getString(R.string.poster_url)
                         + movie.getString(MovieItem.MDB_POSTER)); // URL to poster
             }
             if (movie.getString(MovieItem.MDB_THUMB) == "null") {
                 temp.setThumbPath(null);
             } else {
-                temp.setThumbPath(mContext.getString(R.string.thumb_url)
+                temp.setThumbPath(getString(R.string.thumb_url)
                         + movie.getString(MovieItem.MDB_THUMB)); // URL to thumbnail
             }
             temp.setReleaseDate(movie.getString(MovieItem.MDB_REL_DATE)); // release date
@@ -87,16 +84,16 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
             cVVector.add(temp.getContentValues()); // Add the ContentValue of retrieved movie
         }
 
-        String sortOrder = Utility.getSortType(mContext);
+        String sortOrder = Utility.getSortType(this);
         // add to database
         if ( cVVector.size() > 0 ) {
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
-            mContext.getContentResolver().bulkInsert(Utility.getUriFromSort(mContext), cvArray);
+            this.getContentResolver().bulkInsert(Utility.getUriFromSort(this), cvArray);
         }
 
-        Cursor cursor = mContext.getContentResolver().query(Utility.getUriFromSort(mContext),
-                    null, null, null, Utility.getSortOrder(mContext));
+        Cursor cursor = this.getContentResolver().query(Utility.getUriFromSort(this),
+                null, null, null, Utility.getSortOrder(this));
 
         cVVector = new Vector<>(cursor.getCount());
         if ( cursor.moveToFirst() ) {
@@ -123,10 +120,10 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
         try {
             // Construct the URL for the MovieDB API query
             // using the API Key and sorting parameters
-            final String MOVIE_BASE_URL = mContext.getString(R.string.moviedb_url);
-            final String SORT_PARAM = mContext.getString(R.string.moviedb_sort_param);
-            final String PAGE_PARAM = mContext.getString(R.string.moviedb_page_param);
-            final String KEY_PARAM = mContext.getString(R.string.moviedb_api_key_param);
+            final String MOVIE_BASE_URL = getString(R.string.moviedb_url);
+            final String SORT_PARAM = getString(R.string.moviedb_sort_param);
+            final String PAGE_PARAM = getString(R.string.moviedb_page_param);
+            final String KEY_PARAM = getString(R.string.moviedb_api_key_param);
 
             Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
                     .appendQueryParameter(SORT_PARAM, sortBy)
@@ -188,24 +185,25 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(String... params) {
-
+    protected void onHandleIntent(Intent intent) {
         String pagesRequested = "1";
-        String sortBy = mContext.getString(R.string.pref_sort_popular_api);
+        String sortBy = getString(R.string.pref_sort_popular_api);
         // Check the input
-        if (params.length > 1) sortBy = params[1];
-        if (params.length > 0) pagesRequested = params[0];
+        if (intent.hasExtra(SORT_QUERY_EXTRA)){
+            sortBy = intent.getStringExtra(SORT_QUERY_EXTRA);
+        }
+        if (intent.hasExtra(PAGE_QUERY_EXTRA)){
+            pagesRequested = intent.getStringExtra(PAGE_QUERY_EXTRA);
+        }
 
         // if requested page is out of bound then return
-        if (Integer.parseInt(pagesRequested) > PopularMoviesFragment.MAX_PAGES) return null;
+        if (Integer.parseInt(pagesRequested) > PopularMoviesFragment.MAX_PAGES) return;
 
-        String apiKey = BuildConfig.MOVIE_DB_API_KEY; //mContext.getString(R.string.api_key);
+        String apiKey = BuildConfig.MOVIE_DB_API_KEY;
 
         // fetch all the movies from pages 1 to pagesRequested
         for (int i = 1; i <= Integer.parseInt(pagesRequested); i++) {
             getData(sortBy, apiKey, String.valueOf(i));
         }
-
-        return null;
     }
 }
