@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- API Key. Placed here to be ignored during github push -->
-    <string name="api_key">INSERT API KEY HERE</string>
-</resources>

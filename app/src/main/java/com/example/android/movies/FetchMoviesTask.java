@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.example.android.movies.data.MovieContract;
+import com.example.android.movies.models.MovieItem;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -213,7 +214,7 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
         // if requested page is out of bound then return
         if (Integer.parseInt(pagesRequested) > PopularMoviesFragment.MAX_PAGES) return null;
 
-        String apiKey = mContext.getString(R.string.api_key);
+        String apiKey = BuildConfig.MOVIE_DB_API_KEY; //mContext.getString(R.string.api_key);
 
         // fetch all the movies from pages 1 to pagesRequested
         for (int i = 1; i <= Integer.parseInt(pagesRequested); i++) {

@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.movies.data.MovieContract;
+import com.example.android.movies.models.MovieItem;
 import com.squareup.picasso.Picasso;
 
 import butterknife.Bind;

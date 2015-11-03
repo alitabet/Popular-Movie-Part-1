@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
 
+import com.example.android.movies.adapters.MovieAdapter;
 import com.example.android.movies.data.MovieContract;
 
 import butterknife.Bind;
@@ -133,8 +134,6 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
 
     // fetch movie data from MovieDB API using an AsyncTask
     private void updateMovies(int pageNumber) {
-//        Log.i(LOG_TAG, "Updating movies.");
-//        String api = "http://api.themoviedb.org/";
         // Fetch from preferences whether to sort
         // by popularity or user rating
         SharedPreferences sharedPrefs =
@@ -147,15 +146,15 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
         if (sortType.equals(getString(R.string.pref_sort_rated))) {
             sortBy = getString(R.string.pref_sort_rated_api);
         }
-//        String apiKey = getActivity().getString(R.string.api_key);
 
-//        Gson gson = new GsonBuilder()
-//                .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
-//                .create();
-//
+        String[] params = {String.valueOf(pageNumber), sortBy};
+        FetchMoviesTask moviesTask = new FetchMoviesTask(getActivity());
+        moviesTask.execute(params);
+
+//        String apiKey = BuildConfig.MOVIE_DB_API_KEY;
 //        Retrofit retrofit = new Retrofit.Builder()
-//                .baseUrl(api)
-//                .addConverterFactory(GsonConverterFactory.create(gson))
+//                .baseUrl(getActivity().getString(R.string.movie_db_base_url))
+//                .addConverterFactory(GsonConverterFactory.create())
 //                .build();
 //
 //        // prepare call in Retrofit 2.0
@@ -166,13 +165,37 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
 //        queryMap.put(getActivity().getString(R.string.moviedb_sort_param),sortBy);
 //        queryMap.put(getActivity().getString(R.string.moviedb_page_param),"1");
 //
-//        Call<MovieResults> call = movieDBApi.getMovieResults(new HashMap<String, String>());
-//        //asynchronous call
-//        call.enqueue(this);
-
-        String[] params = {String.valueOf(pageNumber), sortBy};
-        FetchMoviesTask moviesTask = new FetchMoviesTask(getActivity());
-        moviesTask.execute(params);
+//        Call<MovieResults> call = movieDBApi.getMovieResults(queryMap);
+//        Log.i(LOG_TAG, call.toString());
+//        call.enqueue(new Callback<MovieResults>() {
+//            @Override
+//            public void onResponse(Response<MovieResults> response, Retrofit retrofit) {
+//
+//                if (response.body() == null) return;
+//
+//                List<MovieItem> results = response.body().results;
+//                // Insert the movie data into the database
+//                if (results.size() > 0) {
+//                    Vector<ContentValues> cVVector = new Vector<>(results.size());
+//
+//                    for (MovieItem movieItem : results) {
+//                        cVVector.add(movieItem.getContentValues());
+//                    }
+//
+//                    ContentValues[] cvArray = new ContentValues[cVVector.size()];
+//                    cVVector.toArray(cvArray);
+//                    getActivity().getContentResolver().bulkInsert(MovieContract.MovieEntry.CONTENT_URI, cvArray);
+//
+//                }
+//                Log.i(LOG_TAG, "Successful loading of " + results.size() + " items.");
+//            }
+//
+//            @Override
+//            public void onFailure(Throwable t) {
+//                Log.e(LOG_TAG, "Error retrieving movies: " + t.getMessage());
+//                Toast.makeText(getActivity(), "Cannot load movies...", Toast.LENGTH_SHORT).show();
+//            }
+//        });
     }
 
     @Override
@@ -195,31 +218,4 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
     public void onLoaderReset(Loader<Cursor> loader) {
         mMoviesAdaptor.swapCursor(null);
     }
-
-//    @Override
-//    public void onResponse(Response<MovieResults> response, Retrofit retrofit) {
-//
-//        if (response.body() == null) return;
-//
-//        List<MovieItem> results = response.body().getResults();
-//        // Insert the movie data into the database
-//        if (results.size() > 0) {
-//            Vector<ContentValues> cVVector = new Vector<>(results.size());
-//
-//            for (MovieItem movieItem : results) {
-//                cVVector.add(movieItem.getContentValues());
-//            }
-//
-//            ContentValues[] cvArray = new ContentValues[cVVector.size()];
-//            cVVector.toArray(cvArray);
-//            getActivity().getContentResolver().bulkInsert(MovieContract.MovieEntry.CONTENT_URI, cvArray);
-//
-//        }
-//        Log.i(LOG_TAG, "Successful loading of " + results.size() + " items.");
-//    }
-//
-//    @Override
-//    public void onFailure(Throwable t) {
-//
-//    }
 }

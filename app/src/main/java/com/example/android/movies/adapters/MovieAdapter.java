@@ -1,4 +1,4 @@
-package com.example.android.movies;
+package com.example.android.movies.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
 
+import com.example.android.movies.R;
 import com.example.android.movies.data.MovieContract;
 import com.squareup.picasso.Picasso;
 

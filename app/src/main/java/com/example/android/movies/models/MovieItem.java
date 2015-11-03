@@ -1,4 +1,4 @@
-package com.example.android.movies;
+package com.example.android.movies.models;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -6,6 +6,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.example.android.movies.data.MovieContract;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * Class <tt>MovieItem</tt> stores a record obtained
@@ -31,29 +32,21 @@ public class MovieItem implements Parcelable {
     public static final String MDB_RATING      = "vote_average";
     public static final String MDB_POPULARITY  = "popularity";
 
-// @SerializedName(MDB_ID)
-// @Expose
+    @SerializedName(MDB_ID)
     private Integer id;         // unique ID for movie
-// @SerializedName(MDB_TITLE)
-// @Expose
+    @SerializedName(MDB_TITLE)
     private String title;       // title of the movie
-// @SerializedName(MDB_POSTER)
-// @Expose
+    @SerializedName(MDB_POSTER)
     private String posterPath;  // URL path to poster image
-// @SerializedName(MDB_THUMB)
-// @Expose
+    @SerializedName(MDB_THUMB)
     private String thumbPath;   // URL path to thumbnail image
-// @SerializedName(MDB_REL_DATE)
-// @Expose
+    @SerializedName(MDB_REL_DATE)
     private String releaseDate; // movie release date
-// @SerializedName(MDB_RATING)
-// @Expose
+    @SerializedName(MDB_RATING)
     private Double rating;      // movie rating
-// @SerializedName(MDB_POPULARITY)
-// @Expose
+    @SerializedName(MDB_POPULARITY)
     private Double popularity;  // popularity of movie in MovieDB
-// @SerializedName(MDB_SYNP)
-// @Expose
+    @SerializedName(MDB_SYNP)
     private String synopsis;    // Movie synopsis
 
     public MovieItem() {

@@ -1,4 +1,6 @@
-package com.example.android.movies;
+package com.example.android.movies.api;
+
+import com.example.android.movies.api.results.MovieResults;
 
 import java.util.Map;
 
@@ -11,7 +13,7 @@ import retrofit.http.QueryMap;
  */
 public interface MovieDBApi {
 
-    @GET("3/discover/movie")
+    @GET("movie")
     Call<MovieResults> getMovieResults(@QueryMap Map<String, String> queryMap);
 //        @Query("api_key") String key, @Query("sort_by") sortBy);
 }

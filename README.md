@@ -14,14 +14,10 @@ The Popular Movies app retrieves movie information from [The Movie Database (TMD
 * The main page is implemented using a GridView. The GridView implements an endless scroll list in order to keep retrieving data as the user reaches the end of the list. The adapter attached to the GridView is a custom ImageAdapter that extends Android's ArrayAdapter. This custom adapter provides an easy way to set the movie posters in the GridView. 
 * The movie data is extracted from The Movie DB using an AsyncTask. Although a lot of the features to establish and manage an HTTP connection can be better done using third party software like [Retrofit](http://square.github.io/retrofit/), it was a better learning experience to do it the classical way here. During the second part of the project, more third party software will be included if necessary.
 * In order to efficiently pass information from the main to the detail activity, the movie data is stored in a custom class called MovieItem. The MovieItem implements a Parcelable object, which allows sending complete movie information from the main to the detail activity during the intent call. This was implemented mainly to avoid having to create another AsyncTask in the detail activity to retrieve the movie data. The detail activity will only use the movie thumbnail URL and fetch it using Picasso. During part 2 of the project, we will be using SQLite and this feature might not be necessary.
-*  API Key: The Movie DB API requires a user API Key. To facilitate insertion of custom key, the file keys.xml provides an interface for key insertion. This file is located under the values folder in the app resources. Below is a look at the keys.xml file:
- 
+* API Key: The Movie DB API requires a user API Key. To facilitate insertion of custom key, the user can add her own key by adding the following line to [USER_HOME]/.gradle/gradle.properties:
+
     ```
-    <?xml version="1.0" encoding="utf-8"?>
-    <resources>
-        <!-- API Key. Placed here to be ignored during github push -->
-        <string name="api_key">INSERT API KEY HERE</string>
-    </resources>
+    MyMovieDBApiKey="UNIQUE_API_KEY"
    ```
 
 ## License:
