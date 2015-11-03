@@ -38,11 +38,12 @@ public class MovieContract {
 
     // Path to append to base content.
     // content://com.example.android.movies.app/movie/
-    public static final String PATH_MOVIE = "movie";
+    public static final String PATH_MOVIE          = "movie";
+    public static final String PATH_MOVIE_RATING   = "movie_rating";
+    public static final String PATH_MOVIE_FAVORITE = "movie_favorite";
 
-    /*
-        Inner class that defines the contents of the movie table
-     */
+//    Inner class that defines the contents of the movie table
+//    sorted by popularity
     public static final class MovieEntry extends GeneralEntry {
 
         public static final Uri CONTENT_URI =
@@ -55,6 +56,46 @@ public class MovieContract {
 
         // Table name
         public static final String TABLE_NAME = "movie";
+
+        public static Uri buildMovieUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+    }
+
+//    Inner class that defines the contents of the movie table
+    //    sorted by user rating
+    public static final class MovieRatingEntry extends GeneralEntry {
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_MOVIE_RATING).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE;
+
+        // Table name
+        public static final String TABLE_NAME = "movie_rating";
+
+        public static Uri buildMovieUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+    }
+
+    //    Inner class that defines the contents of the movie table
+    //    of user's favorite movies
+    public static final class MovieFavoriteEntry extends GeneralEntry {
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_MOVIE_RATING).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE;
+
+        // Table name
+        public static final String TABLE_NAME = "movie_favorite";
 
         public static Uri buildMovieUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);

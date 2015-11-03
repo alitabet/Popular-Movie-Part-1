@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.example.android.movies.data.MovieContract;
 import com.example.android.movies.models.MovieItem;
 
 import org.json.JSONArray;
@@ -102,16 +101,35 @@ public class FetchMoviesTask extends AsyncTask<String, Void, Void> {
             cVVector.add(temp.getContentValues()); // Add the ContentValue of retrieved movie
         }
 
+        String sortOrder = Utility.getSortType(mContext);
         // add to database
         if ( cVVector.size() > 0 ) {
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
-            mContext.getContentResolver().bulkInsert(MovieContract.MovieEntry.CONTENT_URI, cvArray);
+
+//            if (sortOrder.equals(mContext.getString(R.string.pref_sort_popular))) {
+//                mContext.getContentResolver().bulkInsert(MovieContract.MovieEntry.CONTENT_URI, cvArray);
+//            } else if (sortOrder.equals(mContext.getString(R.string.pref_sort_rated))) {
+//                mContext.getContentResolver().bulkInsert(MovieContract.MovieRatingEntry.CONTENT_URI, cvArray);
+//            }
+
+            mContext.getContentResolver().bulkInsert(Utility.getUriFromSort(mContext), cvArray);
         }
 
-        String sortOrder = Utility.getSortOrder(mContext);
-        Cursor cursor = mContext.getContentResolver().query(MovieContract.MovieEntry.CONTENT_URI,
-                null, null, null, sortOrder);
+//        Cursor cursor = null;
+//        if (sortOrder.equals(mContext.getString(R.string.pref_sort_popular))) {
+//            cursor = mContext.getContentResolver().query(MovieContract.MovieEntry.CONTENT_URI,
+//                    null, null, null, sortOrder);
+//        }
+//        if (sortOrder.equals(mContext.getString(R.string.pref_sort_rated))) {
+//            cursor = mContext.getContentResolver().query(MovieContract.MovieRatingEntry.CONTENT_URI,
+//                    null, null, null, sortOrder);
+//        }
+//
+//        if (cursor == null) return;
+
+        Cursor cursor = mContext.getContentResolver().query(Utility.getUriFromSort(mContext),
+                    null, null, null, Utility.getSortOrder(mContext));
 
         cVVector = new Vector<>(cursor.getCount());
         if ( cursor.moveToFirst() ) {
