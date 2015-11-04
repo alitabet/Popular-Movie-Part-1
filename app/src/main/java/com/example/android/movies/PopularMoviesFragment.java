@@ -14,7 +14,7 @@ import android.widget.GridView;
 
 import com.example.android.movies.adapters.MovieAdapter;
 import com.example.android.movies.data.MovieContract;
-import com.example.android.movies.service.PopularMoviesService;
+import com.example.android.movies.sync.MoviesSyncAdapter;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -32,9 +32,9 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
 
     private static final int MOVIE_LOADER = 0;
 
-    private final String LOG_TAG        = PopularMoviesFragment.class.getSimpleName();
+    private final String LOG_TAG = PopularMoviesFragment.class.getSimpleName();
 
-    public static final int MAX_PAGES = 10; // maximum page value allowed by API
+    public static final int MAX_PAGES = 20; // maximum page value allowed by API
 
     private MovieAdapter mMoviesAdaptor; // adaptor to interact with GridView
 
@@ -77,53 +77,69 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        Cursor cursor = getActivity().getContentResolver()
-                .query(Utility.getUriFromSort(getActivity()),
-                        null,
-                        null,
-                        null,
-                        null);
-
-        // for now we will only insert data if the cursor is empty
-        if (cursor.getCount() ==0) {
-            updateMovies(MAX_PAGES);
-        }
+//        Cursor cursor = getActivity().getContentResolver()
+//                .query(Utility.getUriFromSort(getActivity()),
+//                        null,
+//                        null,
+//                        null,
+//                        null);
+//
+//        // for now we will only insert data if the cursor is empty
+//        if (cursor.getCount() ==0) {
+//            updateMovies(MAX_PAGES);
+//        }
+//        getActivity().getContentResolver().delete(Utility.getUriFromSort(getActivity()), null, null);
         // initialize loader
+//        updateMovies();
         getLoaderManager().initLoader(MOVIE_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
     }
 
     // check if sort order has changed
     void onSortOrderChanged() {
-        Cursor cursor = getActivity().getContentResolver()
-                .query(Utility.getUriFromSort(getActivity()),
-                        null,
-                        null,
-                        null,
-                        null);
-
-        // for now we will only insert data if the cursor is empty
-        if (cursor.getCount() ==0) {
-            updateMovies(MAX_PAGES);
-        }
+//        Cursor cursor = getActivity().getContentResolver()
+//                .query(Utility.getUriFromSort(getActivity()),
+//                        null,
+//                        null,
+//                        null,
+//                        null);
+//
+//        // for now we will only insert data if the cursor is empty
+//        if (cursor.getCount() ==0) {
+//            updateMovies(MAX_PAGES);
+//        }
+        updateMovies();
         getLoaderManager().restartLoader(MOVIE_LOADER, null, this);
     }
 
     // fetch movie data from MovieDB API using an AsyncTask
-    private void updateMovies(int pageNumber) {
-        // Fetch from preferences whether to sort
-        // by popularity or user rating
-        String sortType =  Utility.getSortType(getActivity());
+    private void updateMovies() {
+        MoviesSyncAdapter.syncImmediately(getActivity());
+//        // Fetch from preferences whether to sort
+//        // by popularity or user rating
+//        String sortType =  Utility.getSortType(getActivity());
+//
+//        String sortBy = getString(R.string.pref_sort_popular_api);
+//        if (sortType.equals(getString(R.string.pref_sort_rated))) {
+//            sortBy = getString(R.string.pref_sort_rated_api);
+//        }
+//
+//        Intent alarmIntent = new Intent(getActivity(), PopularMoviesService.AlarmReceiver.class);
+//        alarmIntent.putExtra(PopularMoviesService.SORT_QUERY_EXTRA, sortBy);
+//        alarmIntent.putExtra(PopularMoviesService.PAGE_QUERY_EXTRA, String.valueOf(pageNumber));
+//
+//        // wrap alarm intent in pending intent (just fires once now)
+//        PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity(), 0, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
+//
+//        AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+//
+//        // set the AlarmManager to wake up the system
+//        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent);
 
-        String sortBy = getString(R.string.pref_sort_popular_api);
-        if (sortType.equals(getString(R.string.pref_sort_rated))) {
-            sortBy = getString(R.string.pref_sort_rated_api);
-        }
-
-        Intent intent = new Intent(getActivity(), PopularMoviesService.class);
-        intent.putExtra(PopularMoviesService.SORT_QUERY_EXTRA, sortBy);
-        intent.putExtra(PopularMoviesService.PAGE_QUERY_EXTRA, String.valueOf(pageNumber));
-        getActivity().startService(intent);
+//        Intent intent = new Intent(getActivity(), PopularMoviesService.class);
+//        intent.putExtra(PopularMoviesService.SORT_QUERY_EXTRA, sortBy);
+//        intent.putExtra(PopularMoviesService.PAGE_QUERY_EXTRA, String.valueOf(pageNumber));
+//        getActivity().startService(intent);
     }
 
     @Override

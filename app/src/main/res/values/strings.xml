@@ -1,7 +1,7 @@
 <resources>
 
     <!-- ******************** Strings Activity names and titles ******************** -->
-    <string name="app_name">Popular Movies Part 1</string>
+    <string name="app_name">Popular Movies</string>
 
     <string name="action_settings">Settings</string>
 
@@ -63,4 +63,8 @@
 
     <!-- String in API to sort by user rating -->
     <string name="pref_sort_rated_api" translatable="false">vote_average.desc</string>
+
+    <!-- SyncAdapter related -->
+    <string name="sync_account_type">movies.example.com</string>
+    <string name="content_authority">com.example.android.movies.app</string>
 </resources>

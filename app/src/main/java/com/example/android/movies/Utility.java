@@ -21,11 +21,11 @@ public class Utility {
 //                context.getString(R.string.pref_sort_popular));
         String sortType = getSortType(context);
         String sortOrder = GeneralEntry.COLUMN_POPULARITY + " DESC";
-        if (sortType == context.getString(R.string.pref_sort_rated)) {
-            sortOrder = GeneralEntry.COLUMN_RATING + " DESC";
-        }
-        // Add a second layer of sorting using the movie title
-        sortOrder = sortOrder + ", " + GeneralEntry._ID + " ASC";
+//        if (sortType == context.getString(R.string.pref_sort_rated)) {
+//            sortOrder = GeneralEntry.COLUMN_RATING + " DESC";
+//        }
+//        // Add a second layer of sorting using the movie title
+//        sortOrder = sortOrder + ", " + GeneralEntry._ID + " ASC";
         return sortOrder;
     }
 

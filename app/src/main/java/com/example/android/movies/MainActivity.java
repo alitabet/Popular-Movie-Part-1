@@ -6,6 +6,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.example.android.movies.sync.MoviesSyncAdapter;
+
 public class MainActivity extends ActionBarActivity {
 
     private final String MOVIEFRAGMENT_TAG = "MFTAG";
@@ -22,6 +24,7 @@ public class MainActivity extends ActionBarActivity {
                     .add(R.id.container, new PopularMoviesFragment(), MOVIEFRAGMENT_TAG)
                     .commit();
         }
+        MoviesSyncAdapter.initializeSyncAdapter(this);
     }
 
 

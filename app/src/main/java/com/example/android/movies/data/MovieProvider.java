@@ -5,7 +5,6 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.util.Log;
@@ -202,23 +201,23 @@ public class MovieProvider extends ContentProvider {
         int numInserted = 0;
         switch(match){
             case MOVIE:
-                numInserted = bulkInsert(MovieContract.MovieEntry.TABLE_NAME, values);
+                numInserted = bulkInsert(MovieContract.MovieEntry.TABLE_NAME, uri, values);
                 break;
             case MOVIE_RATING:
-                numInserted = bulkInsert(MovieContract.MovieRatingEntry.TABLE_NAME, values);
+                numInserted = bulkInsert(MovieContract.MovieRatingEntry.TABLE_NAME, uri, values);
                 break;
             default:
                 return super.bulkInsert(uri, values);
         }
-        if (numInserted > 0){
-            // if there was successful insertion, notify the content resolver that there
-            // was a change
-            getContext().getContentResolver().notifyChange(uri, null);
-        }
+//        if (numInserted > 0){
+//            // if there was successful insertion, notify the content resolver that there
+//            // was a change
+//            getContext().getContentResolver().notifyChange(uri, null);
+//        }
         return numInserted;
     }
 
-    private int bulkInsert(String tableName, ContentValues[] values) {
+    private int bulkInsert(String tableName, Uri uri, ContentValues[] values) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         // allows for multiple transactions
         db.beginTransaction();
@@ -226,32 +225,29 @@ public class MovieProvider extends ContentProvider {
         // keep track of successful inserts
         int numInserted = 0;
         try{
-            for(ContentValues value : values){
-                if (value == null){
+            for(ContentValues value : values) {
+                if (value == null) {
                     throw new IllegalArgumentException("Cannot have null content values");
                 }
-                long _id = -1;
-                try{
-                    _id = db.insertOrThrow(tableName,
-                            null, value);
-                }catch(SQLiteConstraintException e) {
-                    Log.w(LOG_TAG, "Attempting to insert " +
-                            value.getAsString(
-                                    MovieContract.MovieEntry.COLUMN_TITLE)
-                            + " but value is already in database.");
+                // check if entry already in table
+                int movieID = value.getAsInteger(GeneralEntry._ID);
+                Uri uriId = uri.buildUpon().appendPath(String.valueOf(movieID)).build();
+                Cursor temp = getContext().getContentResolver().query(uriId, null, null, null, null);
+                if (temp.getCount() > 0) {
+                    Log.d(LOG_TAG, "Movie " + value.getAsString(GeneralEntry.COLUMN_TITLE) +" already in DB");
+                    continue;
                 }
+
+                long _id = db.insert(tableName, null, value);
                 if (_id != -1){
                     numInserted++;
                 }
             }
-            if(numInserted > 0){
-                // If no errors, declare a successful transaction.
-                db.setTransactionSuccessful();
-            }
+            db.setTransactionSuccessful();
         } finally {
-            // all transactions occur at once
             db.endTransaction();
         }
+        getContext().getContentResolver().notifyChange(uri, null);
         return numInserted;
     }
 
