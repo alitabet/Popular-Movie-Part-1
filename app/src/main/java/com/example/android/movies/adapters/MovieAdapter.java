@@ -12,6 +12,9 @@ import com.example.android.movies.R;
 import com.example.android.movies.data.MovieContract;
 import com.squareup.picasso.Picasso;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /**
  * Created by thabetak on 11/1/2015.
  */
@@ -22,18 +25,33 @@ public class MovieAdapter extends CursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        View view = LayoutInflater.from(context).inflate(R.layout.grid_item_movies, parent, false);
-
-        return view;
+        return LayoutInflater.from(context).inflate(R.layout.grid_item_movies, parent, false);
     }
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        ImageView imageView = (ImageView) view;
-        String posterPath = cursor.getString(MovieContract.COL_MOVIE_POSTER);
 
+        ViewHolder viewHolder = new ViewHolder(view);
+
+        String posterPath = cursor.getString(MovieContract.COL_MOVIE_POSTER);
         if (posterPath == null) posterPath = context.getString(R.string.poster_url_alt);
 
+        ImageView imageView = viewHolder.imageView;
         Picasso.with(context).load(posterPath).into(imageView);
+
+//        TextView textView = viewHolder.textView;
+//        textView.setText(cursor.getString(MovieContract.COL_MOVIE_TITLE));
+    }
+
+    static class ViewHolder{
+        @Bind(R.id.grid_item_movies_imageview)
+        ImageView imageView;
+
+//        @Bind(R.id.grid_item_movies_alt_text_view)
+//        TextView textView;
+
+        public ViewHolder(View view) {
+            ButterKnife.bind(this, view);
+        }
     }
 }

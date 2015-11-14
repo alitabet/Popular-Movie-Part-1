@@ -50,6 +50,17 @@ public class Utility {
         }
     }
 
+    public static Uri getUriFromAPISort(Context context, String sortType) {
+        if (sortType.equals(context.getString(R.string.pref_sort_popular_api))) {
+            return MovieContract.MovieEntry.CONTENT_URI;
+        }
+        if (sortType.equals(context.getString(R.string.pref_sort_rated_api))) {
+            return MovieContract.MovieRatingEntry.CONTENT_URI;
+        }
+        else {
+            throw new UnsupportedOperationException("Unknown sort order: " + sortType);
+        }
+    }
     public static Uri getUriWithIDFromSort(Context context, Cursor cursor) {
         String sortType = getSortType(context);
         if (sortType.equals(context.getString(R.string.pref_sort_popular))) {

@@ -2,6 +2,7 @@ package com.example.android.movies.api;
 
 import com.example.android.movies.api.results.MovieResults;
 import com.example.android.movies.api.results.ReviewResults;
+import com.example.android.movies.api.results.TrailerResults;
 
 import java.util.Map;
 
@@ -22,6 +23,9 @@ public interface MovieDBApi {
 
     @GET("movie/{id}/reviews")
     Call<ReviewResults> getReviews(@Path("id") String id, @Query("api_key") String apiKey);
+
+    @GET("movie/{id}/videos")
+    Call<TrailerResults> getTrailers(@Path("id") String id, @Query("api_key") String apiKey);
 
 //        @Query("api_key") String key, @Query("sort_by") sortBy);
 }

@@ -49,7 +49,7 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
         super(context, autoInitialize);
     }
 
-    private void getMoviesFromJsonStr(String movieJsonStr)
+    private void getMoviesFromJsonStr(String movieJsonStr, String sortType)
             throws JSONException {
 
         JSONObject movieJson = new JSONObject(movieJsonStr);
@@ -95,15 +95,14 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
             cVVector.add(temp.getContentValues()); // Add the ContentValue of retrieved movie
         }
 
-        String sortOrder = Utility.getSortType(getContext());
         // add to database
         if ( cVVector.size() > 0 ) {
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
-            getContext().getContentResolver().bulkInsert(Utility.getUriFromSort(getContext()), cvArray);
+            getContext().getContentResolver().bulkInsert(Utility.getUriFromAPISort(getContext(), sortType), cvArray);
         }
 
-        Cursor cursor = getContext().getContentResolver().query(Utility.getUriFromSort(getContext()),
+        Cursor cursor = getContext().getContentResolver().query(Utility.getUriFromAPISort(getContext(), sortType),
                 null, null, null, Utility.getSortOrder(getContext()));
 
         cVVector = new Vector<>(cursor.getCount());
@@ -171,7 +170,7 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
             }
             moviesJsonStr = buffer.toString();
             Log.d(LOG_TAG, "Syncing for sort " + sortBy);
-            getMoviesFromJsonStr(moviesJsonStr);
+            getMoviesFromJsonStr(moviesJsonStr, sortBy);
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
             // if the code couldn't get the movie data then no need
