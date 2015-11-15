@@ -2,6 +2,7 @@ package com.example.android.movies;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -14,7 +15,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.android.movies.api.MovieDBApi;
@@ -26,10 +29,12 @@ import com.example.android.movies.models.Review;
 import com.example.android.movies.models.Trailer;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnItemClick;
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.GsonConverterFactory;
@@ -79,7 +84,31 @@ public class DetailActivity extends ActionBarActivity {
     public static class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
         private final String LOG_TAG = DetailFragment.class.getSimpleName();
         private static final int DETAIL_LOADER = 0;
-        ViewHolder viewHolder;
+
+        private View headerView;
+        private View footerView;
+        private HeaderViewHolder headerViewHolder;
+        private FooterViewHolder footerViewHolder;
+
+        private ArrayAdapter<String> mTrailersAdapter;
+
+        private ArrayList<String> trailerKeys;
+
+        @Bind(R.id.trailer_detail_list_view)
+        ListView trailerListView;
+
+        @OnItemClick(R.id.trailer_detail_list_view)
+        public void onItemClick(int position) {
+            if (trailerKeys.size() > position && trailerKeys.get(position) != null) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(trailerKeys.get(position)));
+
+                if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    startActivity(intent);
+                } else {
+                    Log.d(LOG_TAG, "Couldn't call YouTube, no receiving apps installed!");
+                }
+            }
+        }
 
         public DetailFragment() {
         }
@@ -87,9 +116,27 @@ public class DetailActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
+            // The ArrayAdapter will take data from a source and
+            // use it to populate the ListView it's attached to.
+            mTrailersAdapter =
+                    new ArrayAdapter<>(
+                            getActivity(), // The current context (this activity)
+                            R.layout.detail_text_view, // The name of the layout ID.
+                            R.id.list_item_textview, // The ID of the textview to populate.
+                            new ArrayList<String>());
+
+            trailerKeys = new ArrayList<>();
 
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-            viewHolder = new ViewHolder(rootView);
+            ButterKnife.bind(this, rootView);
+
+            trailerListView.setAdapter(mTrailersAdapter);
+
+            headerView = inflater.inflate(R.layout.fragment_detail_header, container, false);
+            headerViewHolder = new HeaderViewHolder(headerView);
+
+            footerView = inflater.inflate(R.layout.fragment_detail_footer, container, false);
+            footerViewHolder = new FooterViewHolder(footerView);
 
             return rootView;
         }
@@ -120,27 +167,28 @@ public class DetailActivity extends ActionBarActivity {
             MovieItem movie = new MovieItem(data);
 
             // display title, release date, and user rating
-            viewHolder.titleText
-                    .setText(movie.getTitle());
-            viewHolder.dateText
-                    .setText(movie.getReleaseDate());
-            // user rating rounded to 2 decimal places
-            viewHolder.ratingText
-                    .setText(String.format("%.2f", movie.getRating()));
+            headerViewHolder.titleText.setText(movie.getTitle());
+
+            String[] date = movie.getReleaseDate().split("-");
+            headerViewHolder.dateText.setText(date[0]);
+
+            headerViewHolder.ratingText.setText(String.format("%.1f", movie.getRating()) + "/10");
 
             // fetch thumbnail using thumbnail URL
-            String thumbPath = movie.getPosterPath(); //movie.getThumbPath();
+            String thumbPath = movie.getPosterPath();
 
-            if (thumbPath == null) thumbPath = getString(R.string.poster_url_alt); //thumbPath = getString(R.string.thumb_url_alt);
+            if (thumbPath == null) thumbPath = getString(R.string.poster_url_alt);
 
-            Picasso.with(getActivity()).load(thumbPath).into(viewHolder.thumbImage);
+            Picasso.with(getActivity()).load(thumbPath).into(headerViewHolder.thumbImage);
 
             // extract synopsis
-            viewHolder.synopsisText
-                    .setText(movie.getSynopsis());
+            headerViewHolder.synopsisText.setText(movie.getSynopsis());
 
             getTrailers(String.valueOf(data.getInt(MovieContract.COL_MOVIE_ID)));
             getReviews(String.valueOf(data.getInt(MovieContract.COL_MOVIE_ID)));
+
+            trailerListView.addHeaderView(headerView);
+            trailerListView.addFooterView(footerView);
         }
 
         @Override
@@ -164,11 +212,12 @@ public class DetailActivity extends ActionBarActivity {
                     List<Review> reviewList = reviewResult.results;
                     StringBuilder sb = new StringBuilder();
                     for (Review review : reviewList) {
-                        sb.append(review.getContent() + "\n");
-                        sb.append(review.getAuthor() + "\n");
-                        sb.append("\n");
+                        sb.append(review.getContent());
+                        sb.append("\n\n");
+                        sb.append(review.getAuthor());
+                        sb.append("\n\n\n\n");
                     }
-                    viewHolder.reviewText.setText(sb.toString());
+                    footerViewHolder.reviewText.setText(sb.toString());
                 }
 
                 @Override
@@ -192,14 +241,12 @@ public class DetailActivity extends ActionBarActivity {
                 public void onResponse(Response<TrailerResults> response, Retrofit retrofit) {
                     TrailerResults trailerResults = response.body();
                     List<Trailer> trailerList = trailerResults.results;
-                    StringBuilder sb = new StringBuilder();
+                    mTrailersAdapter.clear();
                     int trailerCount = 1;
                     for (Trailer trailer : trailerList) {
-                        sb.append("Trailer " + trailerCount++ + " - ");
-                        sb.append("https://www.youtube.com/watch?v=" + trailer.getKey());
-                        sb.append("\n\n");
+                        mTrailersAdapter.add("trailer " + trailerCount++);
+                        trailerKeys.add("https://www.youtube.com/watch?v=" + trailer.getKey());
                     }
-                    viewHolder.trailerText.setText(sb.toString());
                 }
 
                 @Override
@@ -208,7 +255,8 @@ public class DetailActivity extends ActionBarActivity {
                 }
             });
         }
-        static class ViewHolder {
+
+        static class HeaderViewHolder {
             @Bind(R.id.title_text)
             TextView titleText;
 
@@ -221,16 +269,19 @@ public class DetailActivity extends ActionBarActivity {
             @Bind(R.id.synopsis_text)
             TextView synopsisText;
 
-            @Bind(R.id.trailer_text)
-            TextView trailerText;
-
-            @Bind(R.id.review_text)
-            TextView reviewText;
-
             @Bind(R.id.thumb_imageview)
             ImageView thumbImage;
 
-            public ViewHolder(View view) {
+            public HeaderViewHolder(View view) {
+                ButterKnife.bind(this, view);
+            }
+        }
+
+        static class FooterViewHolder {
+            @Bind(R.id.review_text)
+            TextView reviewText;
+
+            public FooterViewHolder(View view) {
                 ButterKnife.bind(this, view);
             }
         }
