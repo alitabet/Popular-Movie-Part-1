@@ -129,9 +129,9 @@ public class DetailActivity extends ActionBarActivity {
                     .setText(String.format("%.2f", movie.getRating()));
 
             // fetch thumbnail using thumbnail URL
-            String thumbPath = movie.getThumbPath();
+            String thumbPath = movie.getPosterPath(); //movie.getThumbPath();
 
-            if (thumbPath == null) thumbPath = getString(R.string.thumb_url_alt);
+            if (thumbPath == null) thumbPath = getString(R.string.poster_url_alt); //thumbPath = getString(R.string.thumb_url_alt);
 
             Picasso.with(getActivity()).load(thumbPath).into(viewHolder.thumbImage);
 
