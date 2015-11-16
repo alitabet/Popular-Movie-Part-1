@@ -12,11 +12,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
+import com.example.android.movies.adapters.DetailAdapter;
 import com.example.android.movies.api.MovieDBApi;
 import com.example.android.movies.api.results.ReviewResults;
 import com.example.android.movies.api.results.TrailerResults;
@@ -24,7 +22,6 @@ import com.example.android.movies.data.MovieContract;
 import com.example.android.movies.models.MovieItem;
 import com.example.android.movies.models.Review;
 import com.example.android.movies.models.Trailer;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,15 +44,15 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private static final int DETAIL_LOADER = 0;
 
     static final String DETAIL_URI = "URI";
-
+    private String mReviews;
     private Uri mUri;
 
-    private View headerView;
-    private View footerView;
-    private HeaderViewHolder headerViewHolder;
-    private FooterViewHolder footerViewHolder;
+//    private View headerView;
+//    private View footerView;
+//    private HeaderViewHolder headerViewHolder;
+//    private FooterViewHolder footerViewHolder;
 
-    private ArrayAdapter<String> mTrailersAdapter;
+    private DetailAdapter mTrailersAdapter;
 
     private ArrayList<String> trailerKeys;
 
@@ -64,7 +61,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @OnItemClick(R.id.trailer_detail_list_view)
     public void onItemClick(int position) {
-        if (trailerKeys.size() > position && trailerKeys.get(position) != null) {
+        if (position == 0) return;
+
+        if (trailerKeys.size() > position && trailerKeys.get(position - 1) != null) {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(trailerKeys.get(position)));
 
             if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
@@ -90,11 +89,12 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         // The ArrayAdapter will take data from a source and
         // use it to populate the ListView it's attached to.
         mTrailersAdapter =
-                new ArrayAdapter<>(
-                        getActivity(), // The current context (this activity)
-                        R.layout.detail_text_view, // The name of the layout ID.
-                        R.id.list_item_textview, // The ID of the textview to populate.
-                        new ArrayList<String>());
+                new DetailAdapter(getActivity(),new ArrayList<String>());
+//                new ArrayAdapter<>(
+//                        getActivity(), // The current context (this activity)
+//                        R.layout.detail_text_view, // The name of the layout ID.
+//                        R.id.list_item_textview, // The ID of the textview to populate.
+//                        new ArrayList<String>());
 
         trailerKeys = new ArrayList<>();
 
@@ -103,11 +103,11 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
         trailerListView.setAdapter(mTrailersAdapter);
 
-        headerView = inflater.inflate(R.layout.fragment_detail_header, container, false);
-        headerViewHolder = new HeaderViewHolder(headerView);
-
-        footerView = inflater.inflate(R.layout.fragment_detail_footer, container, false);
-        footerViewHolder = new FooterViewHolder(footerView);
+//        headerView = inflater.inflate(R.layout.fragment_detail_header, container, false);
+//        headerViewHolder = new HeaderViewHolder(headerView);
+//
+//        footerView = inflater.inflate(R.layout.fragment_detail_footer, container, false);
+//        footerViewHolder = new FooterViewHolder(footerView);
 
         return rootView;
     }
@@ -145,29 +145,13 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
         MovieItem movie = new MovieItem(data);
 
-        // display title, release date, and user rating
-        headerViewHolder.titleText.setText(movie.getTitle());
-
-        String[] date = movie.getReleaseDate().split("-");
-        headerViewHolder.dateText.setText(date[0]);
-
-        headerViewHolder.ratingText.setText(String.format("%.1f", movie.getRating()) + "/10");
-
-        // fetch thumbnail using thumbnail URL
-        String thumbPath = movie.getPosterPath();
-
-//        if (thumbPath == null) thumbPath = getString(R.string.poster_url_alt);
-
-        Picasso.with(getActivity()).load(thumbPath).into(headerViewHolder.thumbImage);
-
-        // extract synopsis
-        headerViewHolder.synopsisText.setText(movie.getSynopsis());
-
         getTrailers(String.valueOf(data.getInt(MovieContract.COL_MOVIE_ID)));
         getReviews(String.valueOf(data.getInt(MovieContract.COL_MOVIE_ID)));
 
-        trailerListView.addHeaderView(headerView);
-        trailerListView.addFooterView(footerView);
+        if (mReviews != null)
+            movie.setReviews(mReviews);
+
+        mTrailersAdapter.setMovieItem(movie);
     }
 
     @Override
@@ -198,11 +182,13 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                     sb.append(review.getAuthor());
                     sb.append("\n\n\n\n");
                 }
-                footerViewHolder.reviewText.setText(sb.toString());
+                mReviews = sb.toString();
+                mTrailersAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onFailure(Throwable t) {
+                mReviews = null;
                 Log.e(LOG_TAG, "Error loading review: " + t.getMessage());
             }
         });
@@ -225,6 +211,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
                 List<Trailer> trailerList = trailerResults.results;
                 mTrailersAdapter.clear();
+                mTrailersAdapter.add("HEADER");
                 int trailerCount = 1;
                 for (Trailer trailer : trailerList) {
                     mTrailersAdapter.add("trailer " + trailerCount++);
@@ -239,33 +226,33 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         });
     }
 
-    static class HeaderViewHolder {
-        @Bind(R.id.title_text)
-        TextView titleText;
-
-        @Bind(R.id.date_text)
-        TextView dateText;
-
-        @Bind(R.id.rating_text)
-        TextView ratingText;
-
-        @Bind(R.id.synopsis_text)
-        TextView synopsisText;
-
-        @Bind(R.id.thumb_imageview)
-        ImageView thumbImage;
-
-        public HeaderViewHolder(View view) {
-            ButterKnife.bind(this, view);
-        }
-    }
-
-    static class FooterViewHolder {
-        @Bind(R.id.review_text)
-        TextView reviewText;
-
-        public FooterViewHolder(View view) {
-            ButterKnife.bind(this, view);
-        }
-    }
+//    static class HeaderViewHolder {
+//        @Bind(R.id.title_text)
+//        TextView titleText;
+//
+//        @Bind(R.id.date_text)
+//        TextView dateText;
+//
+//        @Bind(R.id.rating_text)
+//        TextView ratingText;
+//
+//        @Bind(R.id.synopsis_text)
+//        TextView synopsisText;
+//
+//        @Bind(R.id.thumb_imageview)
+//        ImageView thumbImage;
+//
+//        public HeaderViewHolder(View view) {
+//            ButterKnife.bind(this, view);
+//        }
+//    }
+//
+//    static class FooterViewHolder {
+//        @Bind(R.id.review_text)
+//        TextView reviewText;
+//
+//        public FooterViewHolder(View view) {
+//            ButterKnife.bind(this, view);
+//        }
+//    }
 }

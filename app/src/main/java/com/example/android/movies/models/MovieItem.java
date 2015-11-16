@@ -49,6 +49,7 @@ public class MovieItem implements Parcelable {
     @SerializedName(MDB_SYNP)
     private String synopsis;    // Movie synopsis
 
+    private String reviews;
     public MovieItem() {
 
     }
@@ -135,6 +136,14 @@ public class MovieItem implements Parcelable {
 
     public void setPopularity(Double popularity) {
         this.popularity = popularity;
+    }
+
+    public String getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(String reviews) {
+        this.reviews = reviews;
     }
 
     public ContentValues getContentValues() {
