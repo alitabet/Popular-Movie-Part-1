@@ -6,9 +6,10 @@
     </style>
 
     <style name="MovieDetailTextHeading" parent="Base.TextAppearance.AppCompat">
-        <item name="android:textSize">36sp</item>
+        <item name="android:textSize">48sp</item>
         <item name="android:textColor">@android:color/white</item>
-        <item name="android:paddingBottom">4dp</item>
+        <item name="android:padding">8dp</item>
+        <item name="android:textAllCaps">true</item>
     </style>
 
     <style name="MovieDetailTextDate" parent="Base.TextAppearance.AppCompat">

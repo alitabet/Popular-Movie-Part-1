@@ -1,9 +1,16 @@
-<GridView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/gridview_movies"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:numColumns="3"
-    android:stretchMode="columnWidth"
-    tools:context=".MainActivity$PopularMoviesFragment" />
+    tools:context=".MainActivity$PopularMoviesFragment" >
+
+    <GridView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/gridview_movies"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:numColumns="3"
+        android:stretchMode="columnWidth" />
+
+</FrameLayout>

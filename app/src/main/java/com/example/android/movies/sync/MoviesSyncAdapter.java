@@ -211,24 +211,6 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
                 getData(sortBy, apiKey, String.valueOf(i));
             }
         }
-
-//        String sortBy = getContext().getString(R.string.pref_sort_popular_api);
-////        if (sortType.equals(getContext().getString(R.string.pref_sort_rated))) {
-////            sortBy = getContext().getString(R.string.pref_sort_rated_api);
-////        }
-//
-//
-//
-//        // First sync popular movies, then user rating:
-//        // fetch all the movies from pages 1 to pagesRequested
-//        for (int i = 1; i <= Integer.parseInt(pagesRequested); i++) {
-//            getData(sortBy, apiKey, String.valueOf(i));
-//        }
-//
-//        sortBy = getContext().getString(R.string.pref_sort_rated_api);
-//        for (int i = 1; i <= Integer.parseInt(pagesRequested); i++) {
-//            getData(sortBy, apiKey, String.valueOf(i));
-//        }
     }
 
     /**

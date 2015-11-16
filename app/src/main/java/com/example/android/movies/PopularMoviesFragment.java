@@ -1,7 +1,7 @@
 package com.example.android.movies;
 
-import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
+import android.widget.ListView;
 
 import com.example.android.movies.adapters.MovieAdapter;
 import com.example.android.movies.data.MovieContract;
@@ -37,6 +38,20 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
     public static final int MAX_PAGES = 20; // maximum page value allowed by API
 
     private MovieAdapter mMoviesAdaptor; // adaptor to interact with GridView
+    private int mPosition = GridView.INVALID_POSITION;
+
+    private static final String SELECTED_KEY = "selected_position";
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface Callback {
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        public void onItemSelected(Uri movieUri);
+    }
 
     @Bind(R.id.gridview_movies)
     GridView gridView;
@@ -45,10 +60,10 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
     public void onItemClick(int position) {
         Cursor cursor = (Cursor) gridView.getItemAtPosition(position);
         if (cursor != null) {
-            Intent intent = new Intent(getActivity(), DetailActivity.class)
-                    .setData(Utility.getUriWithIDFromSort(getActivity(), cursor));
-            startActivity(intent);
+            ((Callback) getActivity())
+                    .onItemSelected(Utility.getUriWithIDFromSort(getActivity(), cursor));
         }
+        mPosition = position;
     }
 
     public PopularMoviesFragment() {
@@ -72,42 +87,23 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
 
         gridView.setAdapter(mMoviesAdaptor);
 
+        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
+            // The listview probably hasn't even been populated yet.  Actually perform the
+            // swapout in onLoadFinished.
+            mPosition = savedInstanceState.getInt(SELECTED_KEY);
+        }
+
         return rootView;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-//        Cursor cursor = getActivity().getContentResolver()
-//                .query(Utility.getUriFromSort(getActivity()),
-//                        null,
-//                        null,
-//                        null,
-//                        null);
-//
-//        // for now we will only insert data if the cursor is empty
-//        if (cursor.getCount() ==0) {
-//            updateMovies(MAX_PAGES);
-//        }
-//        getActivity().getContentResolver().delete(Utility.getUriFromSort(getActivity()), null, null);
-        // initialize loader
-//        updateMovies();
         getLoaderManager().initLoader(MOVIE_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
     }
 
     // check if sort order has changed
     void onSortOrderChanged() {
-//        Cursor cursor = getActivity().getContentResolver()
-//                .query(Utility.getUriFromSort(getActivity()),
-//                        null,
-//                        null,
-//                        null,
-//                        null);
-//
-//        // for now we will only insert data if the cursor is empty
-//        if (cursor.getCount() ==0) {
-//            updateMovies(MAX_PAGES);
-//        }
         updateMovies();
         getLoaderManager().restartLoader(MOVIE_LOADER, null, this);
     }
@@ -115,31 +111,17 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
     // fetch movie data from MovieDB API using an AsyncTask
     private void updateMovies() {
         MoviesSyncAdapter.syncImmediately(getActivity());
-//        // Fetch from preferences whether to sort
-//        // by popularity or user rating
-//        String sortType =  Utility.getSortType(getActivity());
-//
-//        String sortBy = getString(R.string.pref_sort_popular_api);
-//        if (sortType.equals(getString(R.string.pref_sort_rated))) {
-//            sortBy = getString(R.string.pref_sort_rated_api);
-//        }
-//
-//        Intent alarmIntent = new Intent(getActivity(), PopularMoviesService.AlarmReceiver.class);
-//        alarmIntent.putExtra(PopularMoviesService.SORT_QUERY_EXTRA, sortBy);
-//        alarmIntent.putExtra(PopularMoviesService.PAGE_QUERY_EXTRA, String.valueOf(pageNumber));
-//
-//        // wrap alarm intent in pending intent (just fires once now)
-//        PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity(), 0, alarmIntent, PendingIntent.FLAG_ONE_SHOT);
-//
-//        AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
-//
-//        // set the AlarmManager to wake up the system
-//        alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent);
+    }
 
-//        Intent intent = new Intent(getActivity(), PopularMoviesService.class);
-//        intent.putExtra(PopularMoviesService.SORT_QUERY_EXTRA, sortBy);
-//        intent.putExtra(PopularMoviesService.PAGE_QUERY_EXTRA, String.valueOf(pageNumber));
-//        getActivity().startService(intent);
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        // When tablets rotate, the currently selected list item needs to be saved.
+        // When no item is selected, mPosition will be set to Listview.INVALID_POSITION,
+        // so check for that before storing.
+        if (mPosition != GridView.INVALID_POSITION) {
+            outState.putInt(SELECTED_KEY, mPosition);
+        }
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -156,6 +138,12 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mMoviesAdaptor.swapCursor(data);
+
+        if (mPosition != ListView.INVALID_POSITION) {
+            // If we don't need to restart the loader, and there's a desired position to restore
+            // to, do so now.
+            gridView.smoothScrollToPosition(mPosition);
+        }
     }
 
     @Override

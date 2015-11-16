@@ -75,41 +75,48 @@ public class MovieProvider extends ContentProvider {
         switch(sUriMatcher.match(uri)){
             // All Movies selected
             case MOVIE: {
-                return query(MovieContract.MovieEntry.TABLE_NAME,
+                retCursor = query(MovieContract.MovieEntry.TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
                         sortOrder);
+                break;
             }
             // Individual movie based on Id selected
             case MOVIE_WITH_ID: {
-                return query(MovieContract.MovieEntry.TABLE_NAME,
+                retCursor = query(MovieContract.MovieEntry.TABLE_NAME,
                         projection,
                         MovieContract.MovieEntry._ID + " = ?",
                         new String[] {String.valueOf(ContentUris.parseId(uri))},
                         sortOrder);
+                break;
             }
             // All Movies selected
             case MOVIE_RATING: {
-                return query(MovieContract.MovieRatingEntry.TABLE_NAME,
+                retCursor = query(MovieContract.MovieRatingEntry.TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
                         sortOrder);
+                break;
             }
             // Individual movie based on Id selected
             case MOVIE_RATING_WITH_ID: {
-                return query(MovieContract.MovieRatingEntry.TABLE_NAME,
+                retCursor = query(MovieContract.MovieRatingEntry.TABLE_NAME,
                         projection,
                         MovieContract.MovieRatingEntry._ID + " = ?",
                         new String[] {String.valueOf(ContentUris.parseId(uri))},
                         sortOrder);
+                break;
             }
             default:{
                 // By default, we assume a bad URI
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
             }
         }
+        retCursor.setNotificationUri(getContext().getContentResolver(), uri);
+        getContext().getContentResolver().notifyChange(uri, null);
+        return retCursor;
     }
 
     private Cursor query(String tableName, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
