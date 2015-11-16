@@ -76,17 +76,19 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
             temp.setId(movie.getInt(MovieItem.MDB_ID)); // movie id
             temp.setTitle(movie.getString(MovieItem.MDB_TITLE)); // original title
             if (movie.getString(MovieItem.MDB_POSTER) == "null") {
-                temp.setPosterPath(null);
-            } else {
-                temp.setPosterPath(getContext().getString(R.string.poster_url)
-                        + movie.getString(MovieItem.MDB_POSTER)); // URL to poster
+                continue; //temp.setPosterPath(null);
             }
-            if (movie.getString(MovieItem.MDB_THUMB) == "null") {
-                temp.setThumbPath(null);
-            } else {
-                temp.setThumbPath(getContext().getString(R.string.thumb_url)
-                        + movie.getString(MovieItem.MDB_THUMB)); // URL to thumbnail
-            }
+            temp.setPosterPath(getContext().getString(R.string.poster_url)
+                    + movie.getString(MovieItem.MDB_POSTER)); // URL to poster
+//              else {
+
+//            }
+//            if (movie.getString(MovieItem.MDB_THUMB) == "null") {
+//                temp.setThumbPath(null);
+//            } else {
+//                temp.setThumbPath(getContext().getString(R.string.thumb_url)
+//                        + movie.getString(MovieItem.MDB_THUMB)); // URL to thumbnail
+//            }
             temp.setReleaseDate(movie.getString(MovieItem.MDB_REL_DATE)); // release date
             temp.setSynopsis(movie.getString(MovieItem.MDB_SYNP)); // synopsis
             temp.setRating(movie.getDouble(MovieItem.MDB_RATING)); // get user rating

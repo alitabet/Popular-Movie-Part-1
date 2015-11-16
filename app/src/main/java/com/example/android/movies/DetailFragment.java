@@ -156,15 +156,15 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         // fetch thumbnail using thumbnail URL
         String thumbPath = movie.getPosterPath();
 
-        if (thumbPath == null) thumbPath = getString(R.string.poster_url_alt);
+//        if (thumbPath == null) thumbPath = getString(R.string.poster_url_alt);
 
         Picasso.with(getActivity()).load(thumbPath).into(headerViewHolder.thumbImage);
 
         // extract synopsis
         headerViewHolder.synopsisText.setText(movie.getSynopsis());
 
-//        getTrailers(String.valueOf(data.getInt(MovieContract.COL_MOVIE_ID)));
-//        getReviews(String.valueOf(data.getInt(MovieContract.COL_MOVIE_ID)));
+        getTrailers(String.valueOf(data.getInt(MovieContract.COL_MOVIE_ID)));
+        getReviews(String.valueOf(data.getInt(MovieContract.COL_MOVIE_ID)));
 
         trailerListView.addHeaderView(headerView);
         trailerListView.addFooterView(footerView);

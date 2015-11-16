@@ -35,7 +35,7 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
 
     private final String LOG_TAG = PopularMoviesFragment.class.getSimpleName();
 
-    public static final int MAX_PAGES = 20; // maximum page value allowed by API
+    public static final int MAX_PAGES = 5; // maximum page value allowed by API
 
     private MovieAdapter mMoviesAdaptor; // adaptor to interact with GridView
     private int mPosition = GridView.INVALID_POSITION;
