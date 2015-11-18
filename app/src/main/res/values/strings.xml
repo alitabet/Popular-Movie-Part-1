@@ -52,11 +52,17 @@
     <!-- Label for sort by rating option in sort by preferences -->
     <string name="pref_sort_label_rated">User Rating</string>
 
+    <!-- Label for favorite movies -->
+    <string name="pref_sort_label_favorite">Favorites</string>
+
     <!-- Value in SharedPreferences for sort by popularity option -->
     <string name="pref_sort_popular" translatable="false">popular</string>
 
     <!-- Value in SharedPreferences for sort by rating option -->
     <string name="pref_sort_rated" translatable="false">rate</string>
+
+    <!-- Value in SharedPreferences for sort by rating option -->
+    <string name="pref_sort_favorite" translatable="false">favorite</string>
 
     <!-- String in API to sort by popularity -->
     <string name="pref_sort_popular_api" translatable="false">popularity.desc</string>

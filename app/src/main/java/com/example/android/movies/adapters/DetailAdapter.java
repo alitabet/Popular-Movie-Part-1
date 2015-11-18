@@ -1,14 +1,17 @@
 package com.example.android.movies.adapters;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.movies.R;
+import com.example.android.movies.data.MovieContract;
 import com.example.android.movies.models.MovieItem;
 import com.squareup.picasso.Picasso;
 
@@ -93,6 +96,16 @@ public class DetailAdapter extends ArrayAdapter<String> {
         }
 
         String item;
+
+        // check if movie is in favorites table
+        Cursor favoriteCursor = queryFavorite();
+
+        if (favoriteCursor.moveToNext()) {
+            mMovieItem.setFavorite(true);
+        } else {
+            mMovieItem.setFavorite(false);
+        }
+
         switch (getItemViewType(position)) {
             case 0:
                 // display title, release date, and user rating
@@ -112,6 +125,23 @@ public class DetailAdapter extends ArrayAdapter<String> {
                 headerViewHolder.synopsisText.setText(mMovieItem.getSynopsis());
 
                 headerViewHolder.reviewText.setText(mMovieItem.getReviews());
+
+                headerViewHolder.favoriteBox.setChecked(mMovieItem.isFavorite());
+
+                headerViewHolder.favoriteBox.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        CheckBox checkBox = (CheckBox) v;
+                        if (checkBox.isChecked()) {
+                            mMovieItem.setFavorite(true);
+                            saveFavorite();
+                        } else {
+                            mMovieItem.setFavorite(false);
+                            deleteFavorite();
+                        }
+                    }
+                });
+
                 break;
             default:
                 item = mObjects.get(position);
@@ -119,6 +149,36 @@ public class DetailAdapter extends ArrayAdapter<String> {
                 break;
         }
         return rootView;
+    }
+
+    private Cursor queryFavorite() {
+        return mContext.getContentResolver().query(
+                MovieContract.MovieFavoriteEntry.buildMovieUri(mMovieItem.getId()),
+                null,
+                null,
+                null,
+                null);
+    }
+
+    private void saveFavorite() {
+        Cursor favorite = queryFavorite();
+
+        if (!favorite.moveToNext()) {
+            mContext.getContentResolver().insert(
+                    MovieContract.MovieFavoriteEntry.CONTENT_URI,
+                    mMovieItem.getContentValues());
+        }
+    }
+
+    private void deleteFavorite() {
+        Cursor favorite = queryFavorite();
+
+        if (favorite.moveToNext()) {
+            mContext.getContentResolver().delete(
+                    MovieContract.MovieFavoriteEntry.buildMovieUri(mMovieItem.getId()),
+                    null,
+                    null);
+        }
     }
 
     static class ViewHolder{
@@ -160,6 +220,9 @@ public class DetailAdapter extends ArrayAdapter<String> {
 
         @Bind(R.id.thumb_imageview)
         ImageView thumbImage;
+
+        @Bind(R.id.favorite_check_box)
+        CheckBox favoriteBox;
 
 //        @Bind(R.id.list_item_textview)
 //        TextView textView;

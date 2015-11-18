@@ -14,19 +14,12 @@ import com.example.android.movies.data.MovieContract;
  */
 public class Utility {
     public static String getSortOrder(Context context) {
-//        SharedPreferences sharedPrefs =
-//                PreferenceManager.getDefaultSharedPreferences(context);
-//        String sortType = sharedPrefs.getString(
-//                context.getString(R.string.pref_sort_key),
-//                context.getString(R.string.pref_sort_popular));
         String sortType = getSortType(context);
-        String sortOrder = GeneralEntry.COLUMN_POPULARITY + " DESC";
-//        if (sortType == context.getString(R.string.pref_sort_rated)) {
-//            sortOrder = GeneralEntry.COLUMN_RATING + " DESC";
-//        }
-//        // Add a second layer of sorting using the movie title
-//        sortOrder = sortOrder + ", " + GeneralEntry._ID + " ASC";
-        return sortOrder;
+        if (sortType.equals(context.getString(R.string.pref_sort_popular))) {
+            return GeneralEntry.COLUMN_POPULARITY + " DESC";
+        } else {
+            return GeneralEntry.COLUMN_TITLE + " ASC";
+        }
     }
 
     public static String getSortType(Context context){
@@ -45,9 +38,11 @@ public class Utility {
         if (sortType.equals(context.getString(R.string.pref_sort_rated))) {
             return MovieContract.MovieRatingEntry.CONTENT_URI;
         }
-        else {
-            throw new UnsupportedOperationException("Unknown sort order: " + sortType);
+        if (sortType.equals(context.getString(R.string.pref_sort_favorite))){
+            return MovieContract.MovieFavoriteEntry.CONTENT_URI;
         }
+
+        throw new UnsupportedOperationException("Unknown sort order: " + sortType);
     }
 
     public static Uri getUriFromAPISort(Context context, String sortType) {
@@ -57,9 +52,8 @@ public class Utility {
         if (sortType.equals(context.getString(R.string.pref_sort_rated_api))) {
             return MovieContract.MovieRatingEntry.CONTENT_URI;
         }
-        else {
-            throw new UnsupportedOperationException("Unknown sort order: " + sortType);
-        }
+
+        throw new UnsupportedOperationException("Unknown sort order: " + sortType);
     }
     public static Uri getUriWithIDFromSort(Context context, Cursor cursor) {
         String sortType = getSortType(context);
@@ -71,8 +65,11 @@ public class Utility {
             return MovieContract.MovieRatingEntry.buildMovieUri(
                     cursor.getInt(MovieContract.COL_MOVIE_ID));
         }
-        else {
-            throw new UnsupportedOperationException("Unknown sort order: " + sortType);
+        if (sortType.equals(context.getString(R.string.pref_sort_favorite))) {
+            return MovieContract.MovieFavoriteEntry.buildMovieUri(
+                    cursor.getInt(MovieContract.COL_MOVIE_ID));
         }
+
+        throw new UnsupportedOperationException("Unknown sort order: " + sortType);
     }
 }

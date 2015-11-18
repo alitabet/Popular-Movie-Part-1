@@ -104,7 +104,7 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
 
     // check if sort order has changed
     void onSortOrderChanged() {
-        updateMovies();
+//        updateMovies();
         getLoaderManager().restartLoader(MOVIE_LOADER, null, this);
     }
 

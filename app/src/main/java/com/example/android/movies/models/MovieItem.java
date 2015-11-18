@@ -50,6 +50,9 @@ public class MovieItem implements Parcelable {
     private String synopsis;    // Movie synopsis
 
     private String reviews;
+
+    private boolean favorite;
+
     public MovieItem() {
 
     }
@@ -146,6 +149,14 @@ public class MovieItem implements Parcelable {
         this.reviews = reviews;
     }
 
+    public boolean isFavorite() {
+        return favorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        this.favorite = favorite;
+    }
+
     public ContentValues getContentValues() {
         ContentValues movieValues = new ContentValues();
 
@@ -188,6 +199,8 @@ public class MovieItem implements Parcelable {
         dest.writeDouble(rating);
         dest.writeDouble(popularity);
         dest.writeString(synopsis);
+        dest.writeString(reviews);
+        dest.writeByte((byte) (favorite ? 1 : 0));
     }
 
     public static final Parcelable.Creator<MovieItem> CREATOR
@@ -210,6 +223,8 @@ public class MovieItem implements Parcelable {
         rating      = in.readDouble();
         popularity  = in.readDouble();
         synopsis    = in.readString();
+        reviews     = in.readString();
+        favorite    = in.readByte() != 0;
     }
 
     @Override
