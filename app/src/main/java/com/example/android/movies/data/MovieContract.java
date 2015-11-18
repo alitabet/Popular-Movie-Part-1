@@ -70,9 +70,9 @@ public class MovieContract {
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_MOVIE_RATING).build();
 
         public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE;
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE_RATING;
         public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE;
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE_RATING;
 
         // Table name
         public static final String TABLE_NAME = "movie_rating";
@@ -87,12 +87,12 @@ public class MovieContract {
     public static final class MovieFavoriteEntry extends GeneralEntry {
 
         public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_MOVIE_RATING).build();
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_MOVIE_FAVORITE).build();
 
         public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE;
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE_FAVORITE;
         public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE;
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_MOVIE_FAVORITE;
 
         // Table name
         public static final String TABLE_NAME = "movie_favorite";
