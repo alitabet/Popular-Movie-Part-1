@@ -4,13 +4,10 @@ import com.example.android.movies.api.results.MovieResults;
 import com.example.android.movies.api.results.ReviewResults;
 import com.example.android.movies.api.results.TrailerResults;
 
-import java.util.Map;
-
 import retrofit.Call;
 import retrofit.http.GET;
 import retrofit.http.Path;
 import retrofit.http.Query;
-import retrofit.http.QueryMap;
 
 /**
  * Created by alitabet on 11/2/15.
@@ -18,8 +15,8 @@ import retrofit.http.QueryMap;
 public interface MovieDBApi {
     String BASE_URL = "http://api.themoviedb.org/3/";
 
-    @GET("movie")
-    Call<MovieResults> getMovieResults(@QueryMap Map<String, String> queryMap);
+    @GET("movie/{sort_by}")
+    Call<MovieResults> getMovieResults(@Path("sort_by") String sortBy, @Query("api_key") String apiKey);
 
     @GET("movie/{id}/reviews")
     Call<ReviewResults> getReviews(@Path("id") String id, @Query("api_key") String apiKey);

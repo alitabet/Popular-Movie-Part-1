@@ -21,7 +21,6 @@ import com.google.gson.annotations.SerializedName;
 public class MovieItem implements Parcelable {
 
     // These are the names of the JSON objects that need to be extracted.
-    public static final String MDB_TOTAL_PAGES = "total_pages";
     public static final String MDB_LIST        = "results";
     public static final String MDB_ID          = "id";
     public static final String MDB_TITLE       = "original_title";
@@ -172,16 +171,6 @@ public class MovieItem implements Parcelable {
         return movieValues;
     }
 
-//    public void getMovieFromContentValues(ContentValues contentValues) {
-//        id          = contentValues.getAsInteger(MovieContract.MovieEntry._ID);
-//        title       = contentValues.getAsString(MovieContract.MovieEntry.COLUMN_TITLE);
-//        rating      = contentValues.getAsDouble(MovieContract.MovieEntry.COLUMN_RATING);
-//        popularity  = contentValues.getAsDouble(MovieContract.MovieEntry.COLUMN_POPULARITY);
-//        synopsis    = contentValues.getAsString(MovieContract.MovieEntry.COLUMN_SYNOPSIS);
-//        posterPath  = contentValues.getAsString(MovieContract.MovieEntry.COLUMN_POSTER);
-//        thumbPath   = contentValues.getAsString(MovieContract.MovieEntry.COLUMN_THUMB);
-//        releaseDate = contentValues.getAsString(MovieContract.MovieEntry.COLUMN_RELEASE_DATE);
-//    }
     // methods to override for Parcelable:
 
     @Override

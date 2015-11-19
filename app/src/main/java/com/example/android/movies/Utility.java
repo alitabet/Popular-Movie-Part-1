@@ -17,6 +17,8 @@ public class Utility {
         String sortType = getSortType(context);
         if (sortType.equals(context.getString(R.string.pref_sort_popular))) {
             return GeneralEntry.COLUMN_POPULARITY + " DESC";
+        } else if (sortType.equals(context.getString(R.string.pref_sort_rated))){
+            return GeneralEntry.COLUMN_RATING + " DESC";
         } else {
             return GeneralEntry.COLUMN_TITLE + " ASC";
         }

@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
-import android.widget.ListView;
 
 import com.example.android.movies.adapters.MovieAdapter;
 import com.example.android.movies.data.MovieContract;
@@ -35,7 +34,7 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
 
     private final String LOG_TAG = PopularMoviesFragment.class.getSimpleName();
 
-    public static final int MAX_PAGES = 5; // maximum page value allowed by API
+    public static final int MAX_PAGES = 1; // maximum page value allowed by API
 
     private MovieAdapter mMoviesAdaptor; // adaptor to interact with GridView
     private int mPosition = GridView.INVALID_POSITION;
@@ -98,6 +97,7 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+        updateMovies();
         getLoaderManager().initLoader(MOVIE_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
     }
@@ -139,11 +139,11 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mMoviesAdaptor.swapCursor(data);
 
-        if (mPosition != ListView.INVALID_POSITION) {
-            // If we don't need to restart the loader, and there's a desired position to restore
-            // to, do so now.
-            gridView.smoothScrollToPosition(mPosition);
-        }
+//        if (mPosition != ListView.INVALID_POSITION) {
+//            // If we don't need to restart the loader, and there's a desired position to restore
+//            // to, do so now.
+//            gridView.smoothScrollToPosition(mPosition);
+//        }
     }
 
     @Override

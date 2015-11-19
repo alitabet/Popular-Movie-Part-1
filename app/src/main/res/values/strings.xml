@@ -20,7 +20,7 @@
 
     <!-- URL to for the MovieDB API -->
     <string name="moviedb_url" translatable="false">http://api.themoviedb.org/3/discover/movie?</string>
-    <string name="movie_db_base_url" translatable="false">http://api.themoviedb.org/3/discover</string>
+    <string name="movie_db_base_url" translatable="false">http://api.themoviedb.org/3/movie</string>
 
     <!-- URL to for the Poster fetch -->
     <string name="poster_url" translatable="false">http://image.tmdb.org/t/p/w185</string>
@@ -65,10 +65,10 @@
     <string name="pref_sort_favorite" translatable="false">favorite</string>
 
     <!-- String in API to sort by popularity -->
-    <string name="pref_sort_popular_api" translatable="false">popularity.desc</string>
+    <string name="pref_sort_popular_api" translatable="false">popular</string>
 
     <!-- String in API to sort by user rating -->
-    <string name="pref_sort_rated_api" translatable="false">vote_average.desc</string>
+    <string name="pref_sort_rated_api" translatable="false">top_rated</string>
 
     <!-- SyncAdapter related -->
     <string name="sync_account_type">movies.example.com</string>

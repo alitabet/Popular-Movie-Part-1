@@ -20,6 +20,8 @@ import com.example.android.movies.BuildConfig;
 import com.example.android.movies.PopularMoviesFragment;
 import com.example.android.movies.R;
 import com.example.android.movies.Utility;
+import com.example.android.movies.api.MovieDBApi;
+import com.example.android.movies.api.results.MovieResults;
 import com.example.android.movies.models.MovieItem;
 
 import org.json.JSONArray;
@@ -32,7 +34,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
+
+import retrofit.Call;
+import retrofit.Callback;
+import retrofit.GsonConverterFactory;
+import retrofit.Response;
+import retrofit.Retrofit;
 
 /**
  * Created by thabetak on 11/4/2015.
@@ -44,6 +55,8 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int SYNC_INTERVAL = 60 * 60 * 24;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL/3;
     public final String LOG_TAG = MoviesSyncAdapter.class.getSimpleName();
+
+    private String mSortBy;
 
     public MoviesSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -132,13 +145,14 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
         try {
             // Construct the URL for the MovieDB API query
             // using the API Key and sorting parameters
-            final String MOVIE_BASE_URL = getContext().getString(R.string.moviedb_url);
+            final String MOVIE_BASE_URL = getContext().getString(R.string.movie_db_base_url);
             final String SORT_PARAM = getContext().getString(R.string.moviedb_sort_param);
             final String PAGE_PARAM = getContext().getString(R.string.moviedb_page_param);
             final String KEY_PARAM = getContext().getString(R.string.moviedb_api_key_param);
 
-            Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
-                    .appendQueryParameter(SORT_PARAM, sortBy)
+            Uri builtUri = Uri.parse(MOVIE_BASE_URL)
+                    .buildUpon().appendPath(sortBy)
+//                    .appendQueryParameter(SORT_PARAM, sortBy)
                     .appendQueryParameter(KEY_PARAM, apiKey)
                     .appendQueryParameter(PAGE_PARAM, pageRequested)
                     .build();
@@ -210,9 +224,75 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
         for (String sortBy : sortByArray) {
             // fetch all the movies from pages 1 to pagesRequested
             for (int i = 1; i <= Integer.parseInt(pagesRequested); i++) {
+//                getMovies(sortBy, String.valueOf(i));
                 getData(sortBy, apiKey, String.valueOf(i));
             }
         }
+    }
+
+    private void getMovies(final String sortBy, String pageNumber) {
+        Log.i(LOG_TAG, "Loading movies with sort " + sortBy + " and page " + pageNumber);
+        Map<String, String> queryMap = new HashMap<>();
+        queryMap.put(getContext().getString(R.string.moviedb_sort_param),
+                sortBy);
+
+        queryMap.put(getContext().getString(R.string.moviedb_api_key_param),
+                BuildConfig.MOVIE_DB_API_KEY);
+
+        queryMap.put(getContext().getString(R.string.moviedb_page_param),
+                pageNumber);
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(MovieDBApi.BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        MovieDBApi service = retrofit.create(MovieDBApi.class);
+        Call<MovieResults> call = service.getMovieResults(sortBy, BuildConfig.MOVIE_DB_API_KEY);
+        call.enqueue(new Callback<MovieResults>() {
+            private final String SORT_BY = sortBy;
+            @Override
+            public void onResponse(Response<MovieResults> response, Retrofit retrofit) {
+                MovieResults movieResults = response.body();
+                if (movieResults == null) return;
+
+                List<MovieItem> movieList = movieResults.results;
+                Log.i(LOG_TAG, "Loaded " + movieList.size() + " movies");
+                Vector<ContentValues> cVVector = new Vector<>(movieList.size());
+
+                for (MovieItem mv : movieList) {
+                    cVVector.add(mv.getContentValues());
+                }
+                Log.i(LOG_TAG, "Sort by is: " + SORT_BY);
+                Log.i(LOG_TAG, "Uri is: " + Utility.getUriFromAPISort(getContext(), SORT_BY));
+                // add to database
+                if ( cVVector.size() > 0 ) {
+                    ContentValues[] cvArray = new ContentValues[cVVector.size()];
+                    cVVector.toArray(cvArray);
+                    getContext().getContentResolver().bulkInsert(Utility.getUriFromAPISort(getContext(), SORT_BY), cvArray);
+                }
+
+                Cursor cursor = getContext().getContentResolver().query(Utility.getUriFromAPISort(getContext(), SORT_BY),
+                        null, null, null, Utility.getSortOrder(getContext()));
+
+                cVVector = new Vector<>(cursor.getCount());
+                if ( cursor.moveToFirst() ) {
+                    do {
+                        ContentValues cv = new ContentValues();
+                        DatabaseUtils.cursorRowToContentValues(cursor, cv);
+                        cVVector.add(cv);
+                    } while (cursor.moveToNext());
+                }
+
+                Log.i(LOG_TAG, "Number of movies retrieved: " + cVVector.size());
+
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Log.e(LOG_TAG, "Error loading review: " + t.getMessage());
+            }
+        });
     }
 
     /**
