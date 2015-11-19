@@ -12,9 +12,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
+import android.widget.AdapterView;
+import android.widget.CheckBox;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
-import com.example.android.movies.adapters.DetailAdapter;
 import com.example.android.movies.api.MovieDBApi;
 import com.example.android.movies.api.results.ReviewResults;
 import com.example.android.movies.api.results.TrailerResults;
@@ -22,13 +25,13 @@ import com.example.android.movies.data.MovieContract;
 import com.example.android.movies.models.MovieItem;
 import com.example.android.movies.models.Review;
 import com.example.android.movies.models.Trailer;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnItemClick;
 import retrofit.Call;
 import retrofit.Callback;
 import retrofit.GsonConverterFactory;
@@ -43,36 +46,19 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private final String LOG_TAG = DetailFragment.class.getSimpleName();
     private static final int DETAIL_LOADER = 0;
 
-    static final String DETAIL_URI = "URI";
+    public static final String DETAIL_URI = "URI";
+    public static final String REVIEWS_KEY = "reviews";
+    public static final String TRAILERS_KEY = "trailers";
+
     private String mReviews;
     private Uri mUri;
 
-//    private View headerView;
-//    private View footerView;
-//    private HeaderViewHolder headerViewHolder;
-//    private FooterViewHolder footerViewHolder;
+    private ViewHolder viewHolder;
+    private LayoutInflater mInflater;
 
-    private DetailAdapter mTrailersAdapter;
-
-    private ArrayList<String> trailerKeys;
-
-    @Bind(R.id.trailer_detail_list_view)
-    ListView trailerListView;
-
-    @OnItemClick(R.id.trailer_detail_list_view)
-    public void onItemClick(int position) {
-        if (position == 0) return;
-
-        if (trailerKeys.size() > position && trailerKeys.get(position - 1) != null) {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(trailerKeys.get(position)));
-
-            if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
-                startActivity(intent);
-            } else {
-                Log.d(LOG_TAG, "Couldn't call YouTube, no receiving apps installed!");
-            }
-        }
-    }
+    MovieItem mMovieItem;
+    List<String> mAllReviews =  new ArrayList<>();
+    List<String> mAllTrailers =  new ArrayList<>();
 
     public DetailFragment() {
     }
@@ -81,33 +67,14 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        mInflater = inflater;
         Bundle arguments = getArguments();
         if (arguments != null) {
             mUri = arguments.getParcelable(DetailFragment.DETAIL_URI);
         }
 
-        // The ArrayAdapter will take data from a source and
-        // use it to populate the ListView it's attached to.
-        mTrailersAdapter =
-                new DetailAdapter(getActivity(),new ArrayList<String>());
-//                new ArrayAdapter<>(
-//                        getActivity(), // The current context (this activity)
-//                        R.layout.detail_text_view, // The name of the layout ID.
-//                        R.id.list_item_textview, // The ID of the textview to populate.
-//                        new ArrayList<String>());
-
-        trailerKeys = new ArrayList<>();
-
-        View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-        ButterKnife.bind(this, rootView);
-
-        trailerListView.setAdapter(mTrailersAdapter);
-
-//        headerView = inflater.inflate(R.layout.fragment_detail_header, container, false);
-//        headerViewHolder = new HeaderViewHolder(headerView);
-//
-//        footerView = inflater.inflate(R.layout.fragment_detail_footer, container, false);
-//        footerViewHolder = new FooterViewHolder(footerView);
+        View rootView = mInflater.inflate(R.layout.fragment_detail, container, false);
+        viewHolder = new ViewHolder(rootView);
 
         return rootView;
     }
@@ -141,17 +108,23 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        if (!data.moveToFirst()) { return; }
+        if (data!= null && !data.moveToFirst()) { return; }
+        Log.d(LOG_TAG, "Loading...");
+        mMovieItem = new MovieItem(data);
 
-        MovieItem movie = new MovieItem(data);
+        // check if movie is favorite
+        Cursor favoriteCursor = queryFavorite();
 
-        getTrailers(String.valueOf(data.getInt(MovieContract.COL_MOVIE_ID)));
-        getReviews(String.valueOf(data.getInt(MovieContract.COL_MOVIE_ID)));
+        if (favoriteCursor.moveToNext()) {
+            mMovieItem.setFavorite(true);
+        } else {
+            mMovieItem.setFavorite(false);
+        }
 
-        if (mReviews != null)
-            movie.setReviews(mReviews);
-
-        mTrailersAdapter.setMovieItem(movie);
+        // set the main view
+        setMainView();
+        getReviews(Integer.toString(mMovieItem.getId()));
+        getTrailers(Integer.toString(mMovieItem.getId()));
     }
 
     @Override
@@ -175,15 +148,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 if (reviewResult == null) return;
 
                 List<Review> reviewList = reviewResult.results;
-                StringBuilder sb = new StringBuilder();
-                for (Review review : reviewList) {
-                    sb.append(review.getContent());
-                    sb.append("\n\n");
-                    sb.append(review.getAuthor());
-                    sb.append("\n\n\n\n");
-                }
-                mReviews = sb.toString();
-                mTrailersAdapter.notifyDataSetChanged();
+
+                addReviewList(reviewList);
             }
 
             @Override
@@ -210,13 +176,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 if (trailerResults == null) return;
 
                 List<Trailer> trailerList = trailerResults.results;
-                mTrailersAdapter.clear();
-                mTrailersAdapter.add("HEADER");
-                int trailerCount = 1;
-                for (Trailer trailer : trailerList) {
-                    mTrailersAdapter.add("trailer " + trailerCount++);
-                    trailerKeys.add("https://www.youtube.com/watch?v=" + trailer.getKey());
-                }
+
+                addTrailerList(trailerList);
             }
 
             @Override
@@ -226,33 +187,177 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         });
     }
 
-//    static class HeaderViewHolder {
-//        @Bind(R.id.title_text)
-//        TextView titleText;
-//
-//        @Bind(R.id.date_text)
-//        TextView dateText;
-//
-//        @Bind(R.id.rating_text)
-//        TextView ratingText;
-//
-//        @Bind(R.id.synopsis_text)
-//        TextView synopsisText;
-//
-//        @Bind(R.id.thumb_imageview)
-//        ImageView thumbImage;
-//
-//        public HeaderViewHolder(View view) {
-//            ButterKnife.bind(this, view);
-//        }
-//    }
-//
-//    static class FooterViewHolder {
-//        @Bind(R.id.review_text)
-//        TextView reviewText;
-//
-//        public FooterViewHolder(View view) {
-//            ButterKnife.bind(this, view);
-//        }
-//    }
+    private void addReviewList(List<Review> reviewList) {
+        // If we have any trailers then show the label
+        if (reviewList.size() > 0) {
+            viewHolder.reviewLabel.setVisibility(View.VISIBLE);
+        }
+
+        int index = 0;
+        for (Review review : reviewList) {
+            if (!mAllReviews.contains(review.getId())) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(review.getContent());
+                sb.append("\n\n");
+                sb.append(review.getAuthor());
+                sb.append("\n");
+
+                mAllReviews.add(review.getId());
+                viewHolder.reviewLinearLayout.addView(getReviewView(sb.toString(),index++));
+            }
+        }
+    }
+
+    private void addTrailerList(List<Trailer> trailerList) {
+        // If we have any trailers then show the label
+        if (trailerList.size() > 0) {
+            viewHolder.trailerLabel.setVisibility(View.VISIBLE);
+        }
+
+        int trailerCount = 1;
+        for (final Trailer trailer : trailerList) {
+            if (!mAllTrailers.contains(trailer.getId())) {
+                mAllTrailers.add(trailer.getId());
+                viewHolder.trailerLinearLayout.addView(getTrailerView(trailer, trailerCount++));
+            }
+        }
+    }
+
+    private View getTrailerView(Trailer trailer, int count) {
+        final String key = trailer.getKey();
+
+        View view = mInflater.inflate(R.layout.trailer_detail_text_view, null);
+        TextView textView = (TextView) view.findViewById(R.id.trailer_list_item_textview);
+        textView.setText("trailer " + count);
+        view.setOnClickListener(new AdapterView.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=" + key));
+
+                if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    startActivity(intent);
+                } else {
+                    Log.d(LOG_TAG, "Couldn't call YouTube, no receiving apps installed!");
+                }
+            }
+        });
+
+        return view;
+    }
+
+    private View getReviewView(String review, int index) {
+
+        View view = mInflater.inflate(R.layout.review_detail_text_view, null);
+        TextView textView = (TextView) view.findViewById(R.id.review_list_item_textview);
+        textView.setText(review);
+
+        if (index % 2 == 0) {
+            textView.setBackgroundColor(getActivity().getResources().getColor(R.color.MovieDetailBackground));
+        }
+
+        return view;
+    }
+
+    private void setMainView() {
+        // display title, release date, and user rating
+        viewHolder.titleText.setText(mMovieItem.getTitle());
+
+        String[] date = mMovieItem.getReleaseDate().split("-");
+        viewHolder.dateText.setText(date[0]);
+
+        viewHolder.ratingText.setText(String.format("%.1f", mMovieItem.getRating()) + "/10");
+
+        // fetch thumbnail using thumbnail URL
+        String thumbPath = mMovieItem.getPosterPath();
+
+        Picasso.with(getActivity()).load(thumbPath).into(viewHolder.thumbImage);
+
+        // extract synopsis
+        viewHolder.synopsisText.setText(mMovieItem.getSynopsis());
+
+        viewHolder.favoriteBox.setChecked(mMovieItem.isFavorite());
+
+        viewHolder.favoriteBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CheckBox checkBox = (CheckBox) v;
+                if (checkBox.isChecked()) {
+                    mMovieItem.setFavorite(true);
+                    saveFavorite();
+                } else {
+                    mMovieItem.setFavorite(false);
+                    deleteFavorite();
+                }
+            }
+        });
+    }
+
+    private Cursor queryFavorite() {
+        return getActivity().getContentResolver().query(
+                MovieContract.MovieFavoriteEntry.buildMovieUri(mMovieItem.getId()),
+                null,
+                null,
+                null,
+                null);
+    }
+
+    private void saveFavorite() {
+        Cursor favorite = queryFavorite();
+
+        if (!favorite.moveToNext()) {
+            getActivity().getContentResolver().insert(
+                    MovieContract.MovieFavoriteEntry.CONTENT_URI,
+                    mMovieItem.getContentValues());
+        }
+    }
+
+    private void deleteFavorite() {
+        Cursor favorite = queryFavorite();
+
+        if (favorite.moveToNext()) {
+            getActivity().getContentResolver().delete(
+                    MovieContract.MovieFavoriteEntry.buildMovieUri(mMovieItem.getId()),
+                    null,
+                    null);
+        }
+    }
+
+    static class ViewHolder {
+        @Bind(R.id.trailers_linear_layout)
+        LinearLayout trailerLinearLayout;
+
+        @Bind(R.id.reviews_linear_layout)
+        LinearLayout reviewLinearLayout;
+
+        @Bind(R.id.title_text)
+        TextView titleText;
+
+        @Bind(R.id.date_text)
+        TextView dateText;
+
+        @Bind(R.id.rating_text)
+        TextView ratingText;
+
+        @Bind(R.id.synopsis_label)
+        TextView synopsisLabel;
+
+        @Bind(R.id.synopsis_text)
+        TextView synopsisText;
+
+        @Bind(R.id.review_label)
+        TextView reviewLabel;
+
+        @Bind(R.id.trailer_label)
+        TextView trailerLabel;
+
+        @Bind(R.id.thumb_imageview)
+        ImageView thumbImage;
+
+        @Bind(R.id.favorite_check_box)
+        CheckBox favoriteBox;
+
+        public ViewHolder(View view) {
+            ButterKnife.bind(this, view);
+        }
+    }
 }

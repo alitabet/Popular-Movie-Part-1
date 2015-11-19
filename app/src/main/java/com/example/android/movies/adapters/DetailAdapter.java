@@ -77,7 +77,7 @@ public class DetailAdapter extends ArrayAdapter<String> {
 //                    rootView.setTag(headerViewHolder);
                     break;
                 default:
-                    rootView = mInflater.inflate(R.layout.detail_text_view, parent, false);
+                    rootView = mInflater.inflate(R.layout.trailer_detail_text_view, parent, false);
                     holder = new ViewHolder(rootView);
 //                    rootView.setTag(holder);
                     break;
@@ -182,7 +182,7 @@ public class DetailAdapter extends ArrayAdapter<String> {
     }
 
     static class ViewHolder{
-        @Bind(R.id.list_item_textview)
+        @Bind(R.id.trailer_list_item_textview)
         TextView textView;
 
         public ViewHolder(View view) {
