@@ -8,8 +8,13 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -28,7 +33,9 @@ import com.example.android.movies.models.Trailer;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -47,20 +54,20 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private static final int DETAIL_LOADER = 0;
 
     public static final String DETAIL_URI = "URI";
-    public static final String REVIEWS_KEY = "reviews";
-    public static final String TRAILERS_KEY = "trailers";
 
-    private String mReviews;
     private Uri mUri;
 
     private ViewHolder viewHolder;
     private LayoutInflater mInflater;
+    private ShareActionProvider mShareActionProvider;
+
 
     MovieItem mMovieItem;
     List<String> mAllReviews =  new ArrayList<>();
-    List<String> mAllTrailers =  new ArrayList<>();
+    Map<String,Trailer> mAllTrailers =  new HashMap<>();
 
     public DetailFragment() {
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -77,6 +84,32 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         viewHolder = new ViewHolder(rootView);
 
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflater.inflate(R.menu.detailfragment, menu);
+
+        // Retrieve the share menu item
+        MenuItem menuItem = menu.findItem(R.id.action_share);
+
+        // Get the provider and hold onto it to set/change the share intent.
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+
+        if (mAllTrailers.size() > 0) {
+            ArrayList<Trailer> temp = new ArrayList<>(mAllTrailers.values());
+            String url = getActivity().getString(R.string.youtube_url) + temp.get(0).getKey();
+            mShareActionProvider.setShareIntent(createShareForecastIntent(url));
+        }
+    }
+
+    private Intent createShareForecastIntent(String url) {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, url);
+        return shareIntent;
     }
 
     @Override
@@ -154,7 +187,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
             @Override
             public void onFailure(Throwable t) {
-                mReviews = null;
                 Log.e(LOG_TAG, "Error loading review: " + t.getMessage());
             }
         });
@@ -178,6 +210,12 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 List<Trailer> trailerList = trailerResults.results;
 
                 addTrailerList(trailerList);
+
+                // If onCreateOptionsMenu has already happened, we need to update the share intent now.
+                if (mShareActionProvider != null) {
+                    mShareActionProvider.setShareIntent(createShareForecastIntent(
+                            getActivity().getString(R.string.youtube_url) + trailerList.get(0)));
+                }
             }
 
             @Override
@@ -216,8 +254,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
         int trailerCount = 1;
         for (final Trailer trailer : trailerList) {
-            if (!mAllTrailers.contains(trailer.getId())) {
-                mAllTrailers.add(trailer.getId());
+            if (!mAllTrailers.containsKey(trailer.getId())) {
+                mAllTrailers.put(trailer.getId(), trailer);
                 viewHolder.trailerLinearLayout.addView(getTrailerView(trailer, trailerCount++));
             }
         }
@@ -232,7 +270,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         view.setOnClickListener(new AdapterView.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=" + key));
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getActivity().getString(R.string.youtube_url) + key));
 
                 if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
                     startActivity(intent);

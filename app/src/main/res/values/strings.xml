@@ -73,4 +73,11 @@
     <!-- SyncAdapter related -->
     <string name="sync_account_type">movies.example.com</string>
     <string name="content_authority">com.example.android.movies.app</string>
+
+    <!-- Action shae -->
+    <string name="action_share">Share</string>
+
+    <!-- YouTube URL -->
+    <string name="youtube_url">https://www.youtube.com/watch?v=</string>
+
 </resources>
