@@ -2,6 +2,7 @@ package com.example.android.movies;
 
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -120,10 +121,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     // check if sort order has changed
     void onSortOrderChanged() {
-        if (mUri != null) {
-            mUri = null;
-            getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
-        }
+        viewHolder.detailLinearLayout.setVisibility(View.INVISIBLE);
+        mUri = null;
+        getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
     }
 
     @Override
@@ -212,9 +212,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 addTrailerList(trailerList);
 
                 // If onCreateOptionsMenu has already happened, we need to update the share intent now.
-                if (mShareActionProvider != null) {
+                if (mShareActionProvider != null && getActivity() != null) {
                     mShareActionProvider.setShareIntent(createShareForecastIntent(
-                            getActivity().getString(R.string.youtube_url) + trailerList.get(0)));
+                            getActivity().getString(R.string.youtube_url) + trailerList.get(0).getKey()));
                 }
             }
 
@@ -289,14 +289,22 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         TextView textView = (TextView) view.findViewById(R.id.review_list_item_textview);
         textView.setText(review);
 
+//        View ruler = new View(getActivity());
+//        ruler.setBackgroundColor(0xFF00FF00);
+//        viewHolder.reviewLinearLayout.addView(ruler,
+//                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 2));
+
         if (index % 2 == 0) {
-            textView.setBackgroundColor(getActivity().getResources().getColor(R.color.MovieDetailBackground));
+            textView.setBackgroundColor(Color.GRAY);
         }
 
         return view;
     }
 
     private void setMainView() {
+        // Make view visible
+        viewHolder.detailLinearLayout.setVisibility(View.VISIBLE);
+
         // display title, release date, and user rating
         viewHolder.titleText.setText(mMovieItem.getTitle());
 
@@ -361,6 +369,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     static class ViewHolder {
+        @Bind(R.id.detail_vertical_layout)
+        LinearLayout detailLinearLayout;
+
         @Bind(R.id.trailers_linear_layout)
         LinearLayout trailerLinearLayout;
 
