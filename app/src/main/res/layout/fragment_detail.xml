@@ -67,7 +67,7 @@
         <TextView
             style="@style/SynopsisHeadingText"
             android:id="@+id/synopsis_label"
-            android:text="synopsis"
+            android:text="@string/synopsis_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp" />
@@ -88,7 +88,7 @@
             <TextView
                 style="@style/SynopsisHeadingText"
                 android:id="@+id/trailer_label"
-                android:text="trailers"
+                android:text="@string/trailers_label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -105,7 +105,7 @@
             <TextView
                 style="@style/SynopsisHeadingText"
                 android:id="@+id/review_label"
-                android:text="reviews"
+                android:text="@string/reviews_label"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"

@@ -5,7 +5,9 @@ import com.example.android.movies.models.Trailer;
 import java.util.ArrayList;
 
 /**
- * Created by alitabet on 11/14/15.
+ * Class to store JSON results from Movies Trailers
+ *
+ * @author Ali K Thabet
  */
 public class TrailerResults {
     public int id;

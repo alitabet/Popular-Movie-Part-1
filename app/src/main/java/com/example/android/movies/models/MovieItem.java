@@ -80,7 +80,7 @@ public class MovieItem implements Parcelable {
     }
 
     public void setSynopsis(String synopsis) {
-        if (synopsis == "null") this.synopsis = "No synopsis available";
+        if (synopsis.equals("null")) this.synopsis = "No synopsis available";
         else                  this.synopsis = synopsis;
     }
 

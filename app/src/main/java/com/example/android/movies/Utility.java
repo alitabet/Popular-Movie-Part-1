@@ -10,7 +10,9 @@ import com.example.android.movies.data.GeneralEntry;
 import com.example.android.movies.data.MovieContract;
 
 /**
- * Created by thabetak on 11/1/2015.
+ * Utility class to perform common operations
+ *
+ * @author Ali K Thabet
  */
 public class Utility {
     public static String getSortOrder(Context context) {

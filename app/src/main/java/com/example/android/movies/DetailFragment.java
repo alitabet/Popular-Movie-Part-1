@@ -49,6 +49,8 @@ import retrofit.Retrofit;
 /**
  * This fragment will display the details of the
  * selected movie.
+ *
+ * @author Ali K Thabet
  */
 public class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private final String LOG_TAG = DetailFragment.class.getSimpleName();
@@ -63,9 +65,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private ShareActionProvider mShareActionProvider;
 
 
-    MovieItem mMovieItem;
-    List<String> mAllReviews =  new ArrayList<>();
-    Map<String,Trailer> mAllTrailers =  new HashMap<>();
+    private MovieItem mMovieItem;
+    private List<String> mAllReviews =  new ArrayList<>();
+    private Map<String,Trailer> mAllTrailers =  new HashMap<>();
 
     public DetailFragment() {
         setHasOptionsMenu(true);
@@ -117,13 +119,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public void onActivityCreated(Bundle savedInstanceState) {
         getLoaderManager().initLoader(DETAIL_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
-    }
-
-    // check if sort order has changed
-    void onSortOrderChanged() {
-        viewHolder.detailLinearLayout.setVisibility(View.INVISIBLE);
-        mUri = null;
-        getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
     }
 
     @Override
@@ -289,11 +284,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         TextView textView = (TextView) view.findViewById(R.id.review_list_item_textview);
         textView.setText(review);
 
-//        View ruler = new View(getActivity());
-//        ruler.setBackgroundColor(0xFF00FF00);
-//        viewHolder.reviewLinearLayout.addView(ruler,
-//                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 2));
-
+        // Alternate coloring of reviews
         if (index % 2 == 0) {
             textView.setBackgroundColor(Color.GRAY);
         }

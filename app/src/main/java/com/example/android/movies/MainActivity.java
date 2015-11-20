@@ -81,12 +81,6 @@ public class MainActivity extends ActionBarActivity implements PopularMoviesFrag
             if (moviesFragment != null) {
                 moviesFragment.onSortOrderChanged();
             }
-
-//            DetailFragment detailFragment = (DetailFragment)
-//                    getSupportFragmentManager().findFragmentByTag(MOVIEFRAGMENT_TAG);
-//            if (detailFragment != null) {
-//                detailFragment.onSortOrderChanged();
-//            }
             mSortOrder = sortOrder;
         }
     }

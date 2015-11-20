@@ -4,7 +4,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Created by alitabet on 11/14/15.
+ * Class <tt>Review</tt> stores trailers obtained
+ * from the MovieDB API for a specific movie.
+ *
+ * @author Ali K Thabet
  */
 public class Trailer implements Parcelable {
     String id;

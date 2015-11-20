@@ -6,6 +6,10 @@ import android.net.Uri;
 
 /**
  * Define table and column names for Popular Movies DB
+ *
+ * TODO: Merge all 3 tables into one and add foreign key constraints
+ *
+ * @author Ali K Thabet
  */
 public class MovieContract {
     // projection of data to retrieve from DB
@@ -62,7 +66,7 @@ public class MovieContract {
         }
     }
 
-//    Inner class that defines the contents of the movie table
+    //    Inner class that defines the contents of the movie table
     //    sorted by user rating
     public static final class MovieRatingEntry extends GeneralEntry {
 

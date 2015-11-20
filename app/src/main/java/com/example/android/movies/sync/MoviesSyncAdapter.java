@@ -9,8 +9,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SyncRequest;
 import android.content.SyncResult;
-import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -46,7 +44,10 @@ import retrofit.Response;
 import retrofit.Retrofit;
 
 /**
- * Created by thabetak on 11/4/2015.
+ * This class implements a {@link AbstractThreadedSyncAdapter}
+ * It syncs all the movie data in a regural interval of 1 day.
+ *
+ * @author Ali K Thabet
  */
 public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final String PAGE_QUERY_EXTRA = "pqe";
@@ -55,8 +56,6 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int SYNC_INTERVAL = 60 * 60 * 24;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL/3;
     public final String LOG_TAG = MoviesSyncAdapter.class.getSimpleName();
-
-    private String mSortBy;
 
     public MoviesSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -88,20 +87,14 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
             JSONObject movie = movieArray.getJSONObject(i); // get the current movie data
             temp.setId(movie.getInt(MovieItem.MDB_ID)); // movie id
             temp.setTitle(movie.getString(MovieItem.MDB_TITLE)); // original title
-            if (movie.getString(MovieItem.MDB_POSTER) == "null") {
-                continue; //temp.setPosterPath(null);
+
+            // only retrieve movies with a poster
+            if (movie.getString(MovieItem.MDB_POSTER).equals("null")) {
+                continue;
             }
             temp.setPosterPath(getContext().getString(R.string.poster_url)
                     + movie.getString(MovieItem.MDB_POSTER)); // URL to poster
-//              else {
 
-//            }
-//            if (movie.getString(MovieItem.MDB_THUMB) == "null") {
-//                temp.setThumbPath(null);
-//            } else {
-//                temp.setThumbPath(getContext().getString(R.string.thumb_url)
-//                        + movie.getString(MovieItem.MDB_THUMB)); // URL to thumbnail
-//            }
             temp.setReleaseDate(movie.getString(MovieItem.MDB_REL_DATE)); // release date
             temp.setSynopsis(movie.getString(MovieItem.MDB_SYNP)); // synopsis
             temp.setRating(movie.getDouble(MovieItem.MDB_RATING)); // get user rating
@@ -116,20 +109,6 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
             cVVector.toArray(cvArray);
             getContext().getContentResolver().bulkInsert(Utility.getUriFromAPISort(getContext(), sortType), cvArray);
         }
-
-        Cursor cursor = getContext().getContentResolver().query(Utility.getUriFromAPISort(getContext(), sortType),
-                null, null, null, Utility.getSortOrder(getContext()));
-
-        cVVector = new Vector<>(cursor.getCount());
-        if ( cursor.moveToFirst() ) {
-            do {
-                ContentValues cv = new ContentValues();
-                DatabaseUtils.cursorRowToContentValues(cursor, cv);
-                cVVector.add(cv);
-            } while (cursor.moveToNext());
-        }
-
-        Log.d(LOG_TAG, "Number of movies retrieved: " + cVVector.size());
     }
 
     private boolean getData(String sortBy, String apiKey, String pageRequested) {
@@ -213,14 +192,14 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        Log.d(LOG_TAG, "onPerformSync Called.");
         String pagesRequested = String.valueOf(PopularMoviesFragment.MAX_PAGES);
         String apiKey = BuildConfig.MOVIE_DB_API_KEY;
 
         String[] sortByArray = {getContext().getString(R.string.pref_sort_popular_api),
                 getContext().getString(R.string.pref_sort_rated_api)};
 
-        // Sync for both popular movies and user rating:
+        // Sync for both popular movies and user rating
+        // for all pages specified in PopularMoviesFragment.MAX_PAGES
         for (String sortBy : sortByArray) {
             // fetch all the movies from pages 1 to pagesRequested
             for (int i = 1; i <= Integer.parseInt(pagesRequested); i++) {
@@ -228,10 +207,12 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
                 getData(sortBy, apiKey, String.valueOf(i));
             }
         }
+
+        // TODO: Update data for favorite movies
     }
 
+    // Retrofit implementation (not used at the moment)
     private void getMovies(final String sortBy, String pageNumber) {
-        Log.i(LOG_TAG, "Loading movies with sort " + sortBy + " and page " + pageNumber);
         Map<String, String> queryMap = new HashMap<>();
         queryMap.put(getContext().getString(R.string.moviedb_sort_param),
                 sortBy);
@@ -257,35 +238,18 @@ public class MoviesSyncAdapter extends AbstractThreadedSyncAdapter {
                 if (movieResults == null) return;
 
                 List<MovieItem> movieList = movieResults.results;
-                Log.i(LOG_TAG, "Loaded " + movieList.size() + " movies");
                 Vector<ContentValues> cVVector = new Vector<>(movieList.size());
 
                 for (MovieItem mv : movieList) {
                     cVVector.add(mv.getContentValues());
                 }
-                Log.i(LOG_TAG, "Sort by is: " + SORT_BY);
-                Log.i(LOG_TAG, "Uri is: " + Utility.getUriFromAPISort(getContext(), SORT_BY));
+
                 // add to database
                 if ( cVVector.size() > 0 ) {
                     ContentValues[] cvArray = new ContentValues[cVVector.size()];
                     cVVector.toArray(cvArray);
                     getContext().getContentResolver().bulkInsert(Utility.getUriFromAPISort(getContext(), SORT_BY), cvArray);
                 }
-
-                Cursor cursor = getContext().getContentResolver().query(Utility.getUriFromAPISort(getContext(), SORT_BY),
-                        null, null, null, Utility.getSortOrder(getContext()));
-
-                cVVector = new Vector<>(cursor.getCount());
-                if ( cursor.moveToFirst() ) {
-                    do {
-                        ContentValues cv = new ContentValues();
-                        DatabaseUtils.cursorRowToContentValues(cursor, cv);
-                        cVVector.add(cv);
-                    } while (cursor.moveToNext());
-                }
-
-                Log.i(LOG_TAG, "Number of movies retrieved: " + cVVector.size());
-
             }
 
             @Override

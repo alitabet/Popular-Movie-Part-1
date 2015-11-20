@@ -16,7 +16,10 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
- * Created by thabetak on 11/1/2015.
+ * Custom {@link CursorAdapter} to read movie data
+ * from DB and display corresponding move poster
+ *
+ * @author Ali K Thabet
  */
 public class MovieAdapter extends CursorAdapter {
     public MovieAdapter(Context context, Cursor c, int flags) {
@@ -38,17 +41,11 @@ public class MovieAdapter extends CursorAdapter {
 
         ImageView imageView = viewHolder.imageView;
         Picasso.with(context).load(posterPath).into(imageView);
-
-//        TextView textView = viewHolder.textView;
-//        textView.setText(cursor.getString(MovieContract.COL_MOVIE_TITLE));
     }
 
     static class ViewHolder{
         @Bind(R.id.grid_item_movies_imageview)
         ImageView imageView;
-
-//        @Bind(R.id.grid_item_movies_alt_text_view)
-//        TextView textView;
 
         public ViewHolder(View view) {
             ButterKnife.bind(this, view);

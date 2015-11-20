@@ -5,7 +5,9 @@ import com.example.android.movies.models.MovieItem;
 import java.util.ArrayList;
 
 /**
- * Created by alitabet on 11/2/15.
+ * Class to store JSON results from Movies Discover
+ *
+ * @author Ali K Thabet
  */
 public class MovieResults {
     public int page;

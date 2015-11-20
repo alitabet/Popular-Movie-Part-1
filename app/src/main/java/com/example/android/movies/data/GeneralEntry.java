@@ -3,7 +3,10 @@ package com.example.android.movies.data;
 import android.provider.BaseColumns;
 
 /**
- * Created by thabetak on 11/1/2015.
+ * Since all tables have the same structure
+ * they all inherit from this Entry
+ *
+ * @author Ali K Thabet
  */
 public class GeneralEntry implements BaseColumns {
     // Movie title

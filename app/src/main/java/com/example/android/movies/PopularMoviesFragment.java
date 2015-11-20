@@ -14,7 +14,6 @@ import android.widget.GridView;
 
 import com.example.android.movies.adapters.MovieAdapter;
 import com.example.android.movies.data.MovieContract;
-import com.example.android.movies.sync.MoviesSyncAdapter;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -87,7 +86,7 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
         gridView.setAdapter(mMoviesAdaptor);
 
         if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_KEY)) {
-            // The listview probably hasn't even been populated yet.  Actually perform the
+            // The GridView probably hasn't even been populated yet. Actually perform the
             // swapout in onLoadFinished.
             mPosition = savedInstanceState.getInt(SELECTED_KEY);
         }
@@ -104,20 +103,13 @@ public class PopularMoviesFragment extends Fragment implements LoaderManager.Loa
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-//        updateMovies();
         getLoaderManager().initLoader(MOVIE_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
     }
 
     // check if sort order has changed
     void onSortOrderChanged() {
-//        updateMovies();
         getLoaderManager().restartLoader(MOVIE_LOADER, null, this);
-    }
-
-    // fetch movie data from MovieDB API using an AsyncTask
-    private void updateMovies() {
-        MoviesSyncAdapter.syncImmediately(getActivity());
     }
 
     @Override

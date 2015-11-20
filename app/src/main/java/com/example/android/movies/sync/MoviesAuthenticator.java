@@ -7,9 +7,6 @@ import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.os.Bundle;
 
-/**
- * Created by thabetak on 11/4/2015.
- */
 public class MoviesAuthenticator extends AbstractAccountAuthenticator {
 
     public MoviesAuthenticator(Context context) {

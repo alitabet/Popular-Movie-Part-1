@@ -5,12 +5,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 /**
  * Manages a local database for movie data.
+ *
+ * @author Ali K Thabet
  */
 public class MovieDBHelper extends SQLiteOpenHelper {
 
-    // If you change the database schema, you must increment the database version.
+    // Database version: increased every time schema changes
     private static final int DATABASE_VERSION = 27;
 
+    // name of database
     static final String DATABASE_NAME = "movie.db";
 
     public MovieDBHelper(Context context) {
@@ -50,7 +53,11 @@ public class MovieDBHelper extends SQLiteOpenHelper {
         // number of the DB changes
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MovieContract.MovieEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MovieContract.MovieRatingEntry.TABLE_NAME);
+
+        // TODO: This is wrong since movie favorites should not be deleted on upgrade. Need to change it
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MovieContract.MovieFavoriteEntry.TABLE_NAME);
+
+        // create tables again
         onCreate(sqLiteDatabase);
     }
 }

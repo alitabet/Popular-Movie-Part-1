@@ -7,13 +7,18 @@ The Popular Movies app retrieves movie information from [The Movie Database (TMD
 
 * The app starts with a container activity, where the user is presented with a grid of movie posters. This grid is original sorted by popularity. The user has the option to sort by user rating. This sorting option is available through the app settings.  
 * By clicking on a movie poster the user is taken to the detail page corresponding to the clicked movie. The detail page contains additional information about the movie. Specifically, the detail page presents the movie name, release date, rating, and a plot synopsis.
+* The detail page also contains a list of trailer links and user reviews. By clicking on a triler link, the user can watch the movie trailer on YouTube. In this view, the user also has the option to set a movie as a favorite movie, and to share the first movie trailer link.
+* The list of favorite movies are available through the settings option
 * The app has different layouts for portrait and landscape orientations. In the movie poster grid view, the number of posters per row changes from 2 to 3 when rotating the phone from portrait to landscape. This feature ensures that when a user rotates her phone to landscape, she will be able to see the movie posters at a nice and visually friendly size. In the details page, the presentation of the information gets moved to a different layout in order to enhance readability and aesthetics.
+* The app provides support for both phone and tablet versions, where in the tablet case the app shows a master/detail layout.
 
 ## Tech Stuff
 
-* The main page is implemented using a GridView. The GridView implements an endless scroll list in order to keep retrieving data as the user reaches the end of the list. The adapter attached to the GridView is a custom ImageAdapter that extends Android's ArrayAdapter. This custom adapter provides an easy way to set the movie posters in the GridView. 
-* The movie data is extracted from The Movie DB using an AsyncTask. Although a lot of the features to establish and manage an HTTP connection can be better done using third party software like [Retrofit](http://square.github.io/retrofit/), it was a better learning experience to do it the classical way here. During the second part of the project, more third party software will be included if necessary.
-* In order to efficiently pass information from the main to the detail activity, the movie data is stored in a custom class called MovieItem. The MovieItem implements a Parcelable object, which allows sending complete movie information from the main to the detail activity during the intent call. This was implemented mainly to avoid having to create another AsyncTask in the detail activity to retrieve the movie data. The detail activity will only use the movie thumbnail URL and fetch it using Picasso. During part 2 of the project, we will be using SQLite and this feature might not be necessary.
+* The Popular Movies App implements a SyncAdapter to read movies from the Movie DB API. The adapter is scheduled to read movies once a day and update the corresponding local databases.
+* The movie data is extracted from The Movie DB using [Retrofit](http://square.github.io/retrofit/).
+* Locally, there are 3 databases: popular, rating, and favorites. In principle, they could all be implemented in one database. The 3 implementations just made it easier as a first app. Future work should change that into a single implementation.
+* The favorites DB stores the favorite movies as chosen by the user.
+* The main page is implemented using a GridView. The GridView is populated using a cursor adapter that reads from the local database.
 * API Key: The Movie DB API requires a user API Key. To facilitate insertion of custom key, the user can add her own key by adding the following line to [USER_HOME]/.gradle/gradle.properties:
 
     ```

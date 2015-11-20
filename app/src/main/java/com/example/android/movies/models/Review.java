@@ -4,7 +4,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Created by thabetak on 11/3/2015.
+ * Class <tt>Review</tt> stores reviews obtained
+ * from the MovieDB API for a specific movie.
+ *
+ * @author Ali K Thabet
  */
 public class Review implements Parcelable {
     private String id;

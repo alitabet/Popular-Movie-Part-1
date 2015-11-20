@@ -12,6 +12,8 @@
     <string name="release_date_label">release date</string>
     <string name="user_rating_label">rating</string>
     <string name="synopsis_label">synopsis</string>
+    <string name="reviews_label">reviews</string>
+    <string name="trailers_label">trailers</string>
 
     <!-- Key for storing a movie in intent to open detail activity -->
     <string name="detail_intent_movie_key" translatable="false">movieItem</string>

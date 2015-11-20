@@ -1,5 +1,6 @@
 package com.example.android.movies.data;
 
+import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -10,24 +11,26 @@ import android.net.Uri;
 import android.util.Log;
 
 /**
- * Created by alitabet on 10/31/15.
+ * Extension of {@link ContentProvider} that implements
+ * all the DB operations
+ *
+ * @author Ali K Thabet
  */
 public class MovieProvider extends ContentProvider {
     private static final String LOG_TAG = MovieContract.MovieEntry.class.getSimpleName();
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private MovieDBHelper mOpenHelper;
 
-    // Codes for the UriMatcher //////
-    private static final int MOVIE = 100;
-    private static final int MOVIE_WITH_ID = 200;
-    private static final int MOVIE_RATING = 300;
-    private static final int MOVIE_RATING_WITH_ID = 400;
-    private static final int MOVIE_FAVORITE = 500;
-    private static final int MOVIE_FAVORITE_WITH_ID = 600;
+    // Codes for the UriMatcher
+    private static final int MOVIE = 100; // Popular movies
+    private static final int MOVIE_WITH_ID = 200; // Popular movies with ID
+    private static final int MOVIE_RATING = 300; // User rating movies
+    private static final int MOVIE_RATING_WITH_ID = 400; // User rating movies with ID
+    private static final int MOVIE_FAVORITE = 500; // Favorite movies
+    private static final int MOVIE_FAVORITE_WITH_ID = 600; // Favorite movies with ID
 
     private static UriMatcher buildUriMatcher(){
         // Build a UriMatcher by adding a specific code to return based on a match
-        // It's common to use NO_MATCH as the code for this case.
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = MovieContract.CONTENT_AUTHORITY;
 
@@ -45,7 +48,6 @@ public class MovieProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         mOpenHelper = new MovieDBHelper(getContext());
-
         return true;
     }
 
@@ -159,7 +161,6 @@ public class MovieProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         Uri returnUri;
         switch (sUriMatcher.match(uri)) {
             case MOVIE: {
@@ -198,7 +199,6 @@ public class MovieProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         int numDeleted;
         switch (sUriMatcher.match(uri)) {
             case MOVIE:
@@ -242,7 +242,6 @@ public class MovieProvider extends ContentProvider {
 
     @Override
     public int bulkInsert(Uri uri, ContentValues[] values){
-        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
         int numInserted = 0;
         switch(match){
@@ -297,7 +296,6 @@ public class MovieProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues contentValues, String selection, String[] selectionArgs) {
-        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         int numUpdated = 0;
 
         if (contentValues == null){
@@ -365,5 +363,16 @@ public class MovieProvider extends ContentProvider {
                 contentValues,
                 selection,
                 selectionArgs);
+    }
+
+    // From Sunshine App:
+    // You do not need to call this method. This is a method specifically to assist the testing
+    // framework in running smoothly. You can read more at:
+    // http://developer.android.com/reference/android/content/ContentProvider.html#shutdown()
+    @Override
+    @TargetApi(11)
+    public void shutdown() {
+        mOpenHelper.close();
+        super.shutdown();
     }
 }
